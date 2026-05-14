@@ -7,10 +7,11 @@ Este repositorio contiene múltiples proyectos. A continuación, se detalla la l
 ## 🔹 **Proyectos**
 
 
-| **Rama**         | **Descripción**                                                                        | 
-| ---------------- | -------------------------------------------------------------------------------------- | 
-| `/HttpServerFile`| Servir archivos estáticos (HTML, CSS, JS, imágenes, etc.) desde un directorio local.   |
-| `/EditPixel`     | Simples Page Application para crear sprite de forma agil.                              |
+| **Carpeta**             | **Descripción**                                                                        | 
+| ----------------------- | -------------------------------------------------------------------------------------- | 
+| `/HttpServerFile`       | Servir archivos estáticos (HTML, CSS, JS, imágenes, etc.) desde un directorio local.   |
+| `/EditPixel`            | Simples Page Application para crear sprite de forma agil.                              |
+| `/SimplesWebAPITesting` | Un cliente gráfico ligero para probar APIs REST/GraphQL desde Windows.                 |
 
 
 ---
