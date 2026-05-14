@@ -7,9 +7,10 @@ Este repositorio contiene múltiples proyectos, cada uno desarrollado en su prop
 ## 🔹 **Proyectos**
 
 
-| **Rama**         | **Descripción**                         | 
-| ---------------- | --------------------------------------- | 
-| `HttpServerFile` | Servir archivos estáticos (HTML, CSS, JS, imágenes, etc.) desde un directorio local.   |
+| **Rama**         | **Descripción**                                                                        | 
+| ---------------- | -------------------------------------------------------------------------------------- | 
+| `/HttpServerFile`| Servir archivos estáticos (HTML, CSS, JS, imágenes, etc.) desde un directorio local.   |
+| `/EditPixel`     | Simples Page Application para crear sprite de forma agil.                              |
 
 
 ---
