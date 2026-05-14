@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      //"command": "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\msbuild.exe",
+      "command": "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\msbuild.exe",
+      "args": [
+        "${workspaceFolder}/HttpTestingClient/HttpTestingClient.csproj",
+        "/property:GenerateFullPaths=true",
+        "/t:build",
+        "/p:DebugType=full", // <-- Fuerza la generación de .pdb
+        "/p:DebugSymbols=true",
+        "/p:Platform=x64",
+        "/p:Configuration=Debug"
+        //"/p:Configuration=Release"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$msCompile"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    }
+  ]
+}

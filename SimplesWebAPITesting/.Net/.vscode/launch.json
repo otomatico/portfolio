@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Depurar .NET Core",
+      "type": "clr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/HttpTestingClient/bin/x64/Debug/HttpTestingClient.exe",
+      "args":[],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "justMyCode": false ,
+      "symbolOptions":{
+        "searchPaths": [
+          "${workspaceFolder}/HttpTestingClient/bin/x64/Debug",  // <-- Añade esto para buscar el .pdb
+        ],
+        "searchMicrosoftSymbolServer": true,
+        "searchNuGetOrgSymbolServer": false
+      },
+    },
+  ]
+}

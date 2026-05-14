@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Configuración general del proyecto -->
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <!--[guid]::NewGuid()-->
+    <ProjectGuid>{1E32CF0C-50C0-43DB-86A8-9396D42F7CA4}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <!-- "Exe" para consola, "WinExe" para Windows Forms/WPF -->
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>HttpTestingClient</RootNamespace>
+    <AssemblyName>HttpTestingClient</AssemblyName>
+    <!-- <TargetFramework>net45</TargetFramework> Solo para .NET Framework 4.5 -->
+    <!-- O para multi-targeting: -->
+    <!-- <TargetFrameworks>net45;net6.0</TargetFrameworks> -->
+    <!--
+    <TargetFramework>net45</TargetFramework>
+    -->
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
+    <!-- Asegúrate de que esto sea true -->
+    <DebugType>full</DebugType>
+    <!-- Usa "full" para generar .pdb completo -->
+    <Optimize>false</Optimize>
+    <!-- Desactiva la optimización en Debug -->
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <!-- Configuración para modo Debug -->
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\net45\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <!-- Configuración para modo Release -->
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <!-- Archivos de código fuente (incluye todos los .cs en el proyecto) -->
+  <ItemGroup>
+    <Compile Include="BLL\MainFormExtension.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DAL\HeaderRow.cs" />
+    <Compile Include="UIL\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UIL\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <!-- Añade aquí otros archivos .cs de tu proyecto -->
+  </ItemGroup>
+  <!-- Referencias a ensamblados del sistema (ejemplo para consola) -->
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UIL\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <!-- Importa los targets de MSBuild para C# -->
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
