@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+      "label": "build",  // Nombre de la tarea (debe coincidir con preLaunchTask en launch.json)
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/Express.csproj",
+        "-f", "net6.0",  
+        "--configuration", "Debug"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$msCompile"]
+    }
+    ]
+}
