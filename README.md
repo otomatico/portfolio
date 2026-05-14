@@ -1,6 +1,6 @@
 # 📂 Lista de Proyectos
 
-Este repositorio contiene múltiples proyectos, cada uno desarrollado en su propia rama. A continuación, se detalla la lista de proyectos disponibles y su descripción.
+Este repositorio contiene múltiples proyectos. A continuación, se detalla la lista de proyectos disponibles y su descripción.
 
 ---
 
