@@ -89,45 +89,6 @@ Haz clic en el botón **"Enviar"**. La respuesta aparecerá en el panel inferior
 }
 ```
 
----
-
-## 🔧 Personalización
-
-### Cambiar el icono
-
-1. Crea o descarga un archivo `.ico` (ej: `icon.ico`).
-2. Colócalo en la misma carpeta que el archivo `.hta`.
-3. Actualiza la línea en el `<head>`:
-  ```html
-   <hta:application icon="icon.ico" />
-  ```
-
-### Modificar estilos CSS
-
-- **Colores**: Cambia los valores hexadecimales en la sección `<style>`. Ejemplo:
-  ```css
-  .btn-execute {
-      background-color: #0078d4; /* Azul */
-  }
-  ```
-- **Fuentes**: Modifica `font-family` en el `body` o elementos específicos.
-
-### Añadir más métodos HTTP
-
-Edita el menú desplegable en el HTML:
-
-```html
-<select id="method">
-    <option value="POST">POST</option>
-    <option value="GET">GET</option>
-    <option value="PUT">PUT</option>
-    <option value="DELETE">DELETE</option>
-    <option value="PATCH">PATCH</option> <!-- Nuevo método -->
-</select>
-```
-
----
-
 ## ⚠️ Limitaciones
 
 - **Solo Windows**: No compatible con Linux/macOS (depende de `ActiveXObject`).

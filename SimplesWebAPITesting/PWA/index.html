@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <title>REST API Client</title>
+    <!-- Manifest para PWA -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Icono para la PWA -->
+    <link rel="icon" href="assets/icon-192x192.png" type="image/png">
+    <!-- Estilos -->
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+    <!-- Barra de menú -->
+    <div class="menu-bar">
+        <div class="menu-group">
+            <button class="menu-button" id="fileMenuButton">Archivo</button>
+            <div id="fileMenu" class="dropdown-content">
+                <div id="openConfig">Abrir Configuración</div>
+                <div id="saveConfig">Guardar Configuración</div>
+            </div>
+        </div>
+        <div class="menu-item" style="float:right; font-size: 12px; color: #888;">v1.0.0 (PWA)</div>
+    </div>
+
+    <!-- Contenedor de pestañas -->
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <div class="tab-add-button" id="addTabButton">+</div>
+        </div>
+        <div class="tabs-content" id="tabsContent">
+            <!-- Las pestañas se añadirán aquí dinámicamente -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/tabManager.js"></script>
+    <script src="js/fileManager.js"></script>
+    <script src="js/requestManager.js"></script>
+    <script src="js/app.js"></script>
+    <!-- Registrar Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registrado con éxito');
+                    })
+                    .catch(err => {
+                        console.log('Fallo al registrar el ServiceWorker: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>
