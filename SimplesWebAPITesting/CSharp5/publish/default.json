@@ -1,0 +1,11 @@
+{
+  "url": "https://jsonplaceholder.typicode.com/comments?postId=1",
+  "method": "GET",
+  "body": "",
+  "headers": [
+    {
+      "key": "Content-Type",
+      "val": "application/json"
+    }
+  ]
+}
