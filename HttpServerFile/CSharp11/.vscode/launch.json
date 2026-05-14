@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Depurar .NET Core",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/bin/Debug/net6.0/Express.exe",
+      "args":["-port","4321","-path", "${workspaceFolder}/../PWA"],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "justMyCode": false ,
+      "symbolOptions":{
+        "searchPaths": [
+          "${workspaceFolder}/bin/Debug/net6.0",  // <-- Añade esto para buscar el .pdb
+        ],
+        "searchMicrosoftSymbolServer": true,
+        "searchNuGetOrgSymbolServer": false
+      },
+    },
+  ]
+}
