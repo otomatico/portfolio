@@ -1,9 +1,0 @@
-C:\Users\otavio.ferreira\Documents\Ludico\06-MiniPostman\.Net\HttpTestingClient\bin\x64\Debug\HttpTestingClient.exe
-C:\Users\otavio.ferreira\Documents\Ludico\06-MiniPostman\.Net\HttpTestingClient\bin\x64\Debug\HttpTestingClient.pdb
-C:\Users\otavio.ferreira\Documents\Ludico\06-MiniPostman\.Net\HttpTestingClient\bin\x64\Debug\Newtonsoft.Json.dll
-C:\Users\otavio.ferreira\Documents\Ludico\06-MiniPostman\.Net\HttpTestingClient\bin\x64\Debug\Newtonsoft.Json.xml
-C:\Users\otavio.ferreira\Documents\Ludico\06-MiniPostman\.Net\HttpTestingClient\obj\x64\Debug\HttpTestingClient.csprojResolveAssemblyReference.cache
-C:\Users\otavio.ferreira\Documents\Ludico\06-MiniPostman\.Net\HttpTestingClient\obj\x64\Debug\HttpTestingClient.MainForm.resources
-C:\Users\otavio.ferreira\Documents\Ludico\06-MiniPostman\.Net\HttpTestingClient\obj\x64\Debug\HttpTestingClient.csproj.GenerateResource.Cache
-C:\Users\otavio.ferreira\Documents\Ludico\06-MiniPostman\.Net\HttpTestingClient\obj\x64\Debug\HttpTestingClient.exe
-C:\Users\otavio.ferreira\Documents\Ludico\06-MiniPostman\.Net\HttpTestingClient\obj\x64\Debug\HttpTestingClient.pdb
