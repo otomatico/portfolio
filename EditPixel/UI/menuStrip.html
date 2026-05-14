@@ -1,0 +1,311 @@
+<style>
+    menu-strip details .context-menu {
+        display: none;
+    }
+
+    menu-strip details[open] .context-menu {
+        display: block;
+        position: absolute;
+        background-color: var(--button-face);
+    }
+
+    menu-strip details summary:hover {
+        background-color: var(--surface);
+    }
+
+    menu-strip details {
+        display: inline;
+        padding: 2px 6px;
+        margin: 0;
+    }
+
+    menu-strip details summary {
+        list-style: none;
+        padding: 3px 4px;
+        margin: 0;
+    }
+
+    .context-menu li:hover {
+        background-color: var(--surface);
+    }
+
+    .context-menu li {
+        padding: 4px 8px;
+    }
+
+    menu-strip .context-menu {
+        list-style: none;
+        box-shadow: var(--border-window-outer), var(--border-window-inner);
+        background-color: var(--button-face);
+        padding: 3px;
+        margin: 0;
+    }
+
+    menu-strip {
+        border-bottom: var(--border-width) outset var(--button-shadow);
+        background-color: var(--button-face);
+        display: block;
+    }
+
+    .context-menu li.separator:hover {
+        background-color: transparent;
+    }
+
+    .context-menu li.separator {
+        padding: 0;
+        color: transparent;
+        border-top: 1px solid var(--surface);
+        height: 0px;
+        width: 90%;
+        margin: 3px auto;
+    }
+
+    menu-strip .float-right .context-menu {
+        right: 0;
+    }
+
+    menu-strip .float-right {
+        margin-right: 8px;
+    }
+
+    li.disabled {
+        color: var(--button-shadow);
+        text-shadow: 1px 1px 0px var(--button-highlight);
+    }
+</style>
+
+<template id="menu-strip">
+    <header class="menustrip"></header>
+    <template id="menu-strip-item">
+        <details>
+            <summary></summary>
+            <menu class="context-menu">
+            </menu>
+        </details>
+    </template>
+    <template id="menu-strip-about">
+        <blockquote class="about">
+            <h2><img src="../assets/img/favicon.ico"> EditPixel</h2>
+            <p><b>Descripcion</b>:Aplicacion para crear sprite de forma mas agil para juegos retro</p>
+            <p><span><b>Autor</b>:Otavio Ferreira Rosa</span> <span><b>Version</b>: 2023.10.26</span></p>
+        </blockquote>
+    </template>
+    <dialog is="export-as" class="window"></dialog>
+</template>
+
+<script type="module">
+    import Current from "./Entity/Current.js"
+    import SpriteList from "./Entity/SpriteList.js"
+    import * as $global from "./global.js"
+    const componentTagName = "menu-strip"
+    export default class Menustrip extends HTMLElement {
+        #html = null
+        #item = null
+        #items = null
+        #menustrip = [
+            {
+                text: "Archivo",
+                children: [
+                    { text: "Nuevo", className: "new" },
+                    { text: "Abrir", className: "open" },
+                    { text: "Guardar", className: "save" },
+                    { text: "-", className: "separator" },
+                    { text: "Exportar Todo", className: "export-all" },
+                    { text: "Exportar Actual", className: "export-current" },
+                    { text: "-", className: "separator" },
+                    { text: "Salir", className: "exit disabled" },
+
+                ]
+            },
+            {
+                text: "Ayuda",
+                className: "float-right",
+                children: [
+                    { text: "Sobre", className: "about" },
+                    { text: "Descargar", className: "download disabled" },
+                ]
+            }
+        ]
+        constructor() {
+            super()
+        }
+
+        connectedCallback() {
+            this.#html = document.querySelector(`TEMPLATE#${componentTagName}`).content || null
+            this.appendChild(this.#html.cloneNode(true))
+            this.addEventListener("click", this.eventClickMenu.bind(this))
+
+            this.querySelector("dialog[is=export-as]").addEventListener("close", this.eventCloseExportASDialog.bind(this))
+            this.#render()
+        }
+
+        eventClickMenu(event) {
+            const { className, tagName, parentNode } = event.target
+            const targetValid = ["new", "open", "save", "export-all", "export-current", "about"]
+            const opened = this.querySelector("details[open]")
+            if (tagName == "LI") {
+                let attr = className.split(' ').filter(_class => targetValid.includes(_class))[0]
+                switch (attr) {
+                    case "new":
+                        this.New()
+                        break
+                    case "open":
+                        this.Open()
+                        break
+                    case "save":
+                        this.Save()
+                        break
+                    case "export-all":
+                        this.ExportAll()
+                        break
+                    case "export-current":
+                        this.ExportItem()
+                        break
+                    case "about":
+                        this.About()
+                        break
+                    //                    case "download":
+                    //                        this.Download()
+                    //                        break
+                    //                    case "exit":
+                    //                        this.Download()
+                    //                        break
+                }
+                opened.removeAttribute("open")
+            }
+            if (tagName == 'SUMMARY') {
+
+                if (opened && parentNode.getAttribute("open") != '') {
+                    opened.removeAttribute("open")
+                }
+            }
+        }
+
+        New() {
+            model.notify(new SpriteList())
+        }
+        Open() {
+            $global.OpenAs().then(result => {
+                let data = JSON.parse(result)
+                this.#items = new SpriteList()
+                this.#items.sprites = data.sprites.map((item, index) => {
+                    let current = new Current()
+                    current.sprite = item.sprite
+                    current.palette = item.palette
+                    current.index = index
+                    return current;
+                })
+                this.#items.map_bg = data.map_bg
+                model.notify(this.#items)
+            })
+        }
+
+        Save() {
+            $global.prompt("Guardar como...", "proyect-sprite.json").then((fileName) => {
+                if (fileName && this.#items != null) {
+                    const data = this.#items.toString()
+                    $global.ExportAs({ fileName, data })
+                } else {
+                    if (!this.#items) {
+                        $global.alert("No hay informacion que guardar")
+                    }
+                }
+            })
+        }
+
+        ExportAll() {
+            this.querySelector("dialog[is=export-as]").showModal();
+        }
+        eventCloseExportASDialog(event) {
+            const { returnValue } = event.target
+            if (returnValue) {
+                const form = JSON.parse(returnValue)
+
+                let sizes = this.#items.sprites
+                    .map(item => ({ width: item.width, height: item.height }))
+                    .reduce((aux, { width, height }) => {
+                        aux.width = Math.max(aux.width, width)
+                        aux.height = Math.max(aux.height, height)
+                        return aux
+                    }, { width: 0, height: 0 })
+                form.row = Math.ceil(this.#items.sprites.length / form.column)
+
+                const canvas = document.createElement("canvas")
+                const ctx = canvas.getContext("2d")
+                canvas.style.backgroundColor = "transparent"
+                canvas.width = sizes.width * form.column
+                canvas.height = sizes.height * form.row
+
+                let heightLast = 0, height = 0
+                this.#items.sprites.forEach((item, index) => {
+                    const { sprite, palette } = item
+                    let _palette = ['transparent', ...palette.slice(1)]
+                    $global.paint(ctx, { sprite, palette: _palette })
+                    if (form.column > 1 && (index + 1) % form.column) {
+                        ctx.translate(item.width, 0);
+                        heightLast = Math.max(item.height, heightLast)
+                    } else {
+                        height += Math.max(item.height, heightLast)
+                        ctx.setTransform(1, 0, 0, 1, 0, height);
+                    }
+                })
+                let [mimeType, data] = canvas.toDataURL().split(',')
+                mimeType = mimeType.replace('data:', '')
+                $global.ExportAs({ fileName: form.fileName, data, mimeType })
+            }
+        }
+
+        ExportItem() {
+            $global.prompt("Exportar como...", "sprite.png").then((fileName) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = this.#item.width
+                canvas.height = this.#item.height
+                const { sprite, palette } = this.#item
+                let _palette = ['transparent', ...palette.slice(1)]
+                $global.paint(canvas.getContext("2d"), { sprite, palette: _palette })
+                let [mimeType, data] = canvas.toDataURL().split(',')
+                mimeType = mimeType.replace('data:', '')
+                $global.ExportAs({ fileName, data, mimeType })
+            })
+        }
+        About() {
+            const message = document.querySelector(`TEMPLATE#${componentTagName}-about`)
+            $global.alert(message.innerHTML)
+        }
+
+        #render() {
+            const HEADER = this.querySelector("header")
+            HEADER.innerHTML = ''
+            this.#menustrip.forEach(item => {
+                const clone = this.querySelector(`TEMPLATE#${componentTagName}-item`).content.cloneNode(true)
+                clone.querySelector("summary").textContent = item.text
+                if (item.className) {
+                    clone.querySelector("details").className = item.className
+                }
+                const menu = clone.querySelector("menu.context-menu")
+                item.children?.forEach((subitem) => {
+                    const { text, className } = subitem
+                    const li = document.createElement("LI")
+                    if (text) {
+                        li.textContent = text
+                    }
+                    if (className) {
+                        li.className = className
+                    }
+                    menu.appendChild(li)
+                })
+                HEADER.appendChild(clone)
+
+            })
+        }
+        notify(model) {
+            if (model instanceof Current) {
+                this.#item = model
+            }
+            if (model instanceof SpriteList) {
+                this.#items = model
+            }
+        }
+    }
+    window.customElements.define(componentTagName, Menustrip)
+</script>

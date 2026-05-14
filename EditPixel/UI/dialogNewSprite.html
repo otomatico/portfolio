@@ -1,0 +1,116 @@
+<style>
+    dialog[is=new-sprite] form>.field-row>label {
+        width: 40px;
+        justify-content: end;
+    }
+
+    dialog[is=new-sprite] input[type="color" i][list] {
+        box-shadow: var(--border-field);
+        background-color: var(--button-highlight);
+        width: 53px;
+        border: 0
+    }
+
+    dialog[is=new-sprite] .field-row.footer {
+        justify-content: end;
+        margin-top: 10px;
+    }
+
+    dialog[is=new-sprite] input[type=number] {
+        max-width: 55px;
+        height: auto;
+    }
+
+    dialog[is=new-sprite] {
+        width: 280px;
+    }
+</style>
+
+<template id="new-sprite">
+    <form method="dialog">
+        <div class="title-bar">
+            <div class="title-bar-text">Nuevo Sprite</div>
+            <div class="title-bar-controls">
+                <button data-action="Close" type="reset"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            <div class="field-row">
+                <label for="width">Width</label>
+                <input id="width" type="number" min="8" value="16" />
+                <label for="height">Height</label>
+                <input id="height" type="number" min="8" value="16" />
+            </div>
+            <fieldset>
+                <legend>Palette</legend>
+
+                <div class="field-row">
+                    <input id="transparency" type="color" list="palette-color" value="#e0f8d0" />
+                    <label>Transparency</label>
+                </div>
+                <div class="field-row">
+                    <input id="colora" type="color" list="palette-color" value="#88c070" />
+                    <label>Color A</label>
+                </div>
+                <div class="field-row">
+                    <input id="colorb" type="color" list="palette-color" value="#346856" />
+                    <label>Color B</label>
+                </div>
+                <div class="field-row">
+                    <input id="colorc" type="color" list="palette-color" value="#081820" />
+                    <label>Color C</label>
+                </div>
+                <datalist id="palette-color">
+                    <option>#e0f8d0</option>
+                    <option>#88c070</option>
+                    <option>#346856</option>
+                    <option>#081820</option>
+                </datalist>
+            </fieldset>
+            <div class="field-row footer">
+                <button type="submit">Ok</button>
+            </div>
+        </div>
+    </form>
+</template>
+
+<script type="module">
+    const componentTagName = "new-sprite"
+    const COLOR = ["#e0f8d0", "#88c070", "#346856", "#081820"]
+    export default class DialogNewSprite extends HTMLDialogElement {
+        #html = null
+        constructor() {
+            super();
+        }
+        connectedCallback() {
+            this.#html = document.querySelector(`TEMPLATE#${componentTagName}`).content || null;
+            this.appendChild(this.#html.cloneNode(true))
+            this.addEventListener("click", this.eventClickDialogCreateSprite.bind(this))
+            this.addEventListener("submit", this.eventSubmitDialogCreateSprite.bind(this))
+        }
+        eventClickDialogCreateSprite(event) {
+            const { tagName, type } = event.target;
+            if (tagName == "BUTTON") {
+                if (type == "reset") {
+                    this.close("")
+                }
+            }
+        }
+        eventSubmitDialogCreateSprite(event) {
+            const data = {palette:[]}
+            const inputbox = ["width", "height", "transparency", "colora", "colorb", "colorc"]
+            inputbox.forEach((name) => {
+                const input = this.querySelector("#" + name)
+                if (input.type == "number") {
+                    data[name] = new Number(input.value)
+                } else {
+                    data.palette.push(input.value)
+                }
+            })
+
+            this.querySelector("form[method=dialog]").reset()
+            this.close(JSON.stringify(data));
+        }
+    }
+    window.customElements.define(componentTagName, DialogNewSprite, { extends: 'dialog' });
+</script>

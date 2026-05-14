@@ -1,0 +1,79 @@
+<style>
+    dialog[is=export-as] .field-row.footer {
+        justify-content: end;
+        margin-top: 10px;
+    }
+
+    dialog[is=export-as] fieldset input[type=number] {
+        max-width: 50px;
+        height: auto;
+    }
+
+    dialog[is=export-as] fieldset {
+        margin-top: 8px 0;
+    }
+
+    dialog[is=export-as] {
+        min-width: 280px;
+    }
+</style>
+
+<template id="export-as">
+    <form method="dialog">
+        <div class="title-bar">
+            <div class="title-bar-text">Exportar como...</div>
+            <div class="title-bar-controls">
+                <button aria-label="Close" type="reset"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            <div class="field-row">
+                <label for="width">Nombre</label>
+                <input id="fileName" type="text" value="sprites.png" />
+            </div>
+            <div class="field-row">
+                <label for="column">Columnas</label>
+                <input id="column" type="number" value="1" min="1" />
+            </div>
+            <div class="field-row footer">
+                <button type="submit">Aceptar</button>
+                <button type="reset">Cancelar</button>
+            </div>
+        </div>
+    </form>
+</template>
+
+<script type="module">
+    const componentTagName = "export-as"
+    export default class DialogExportAs extends HTMLDialogElement {
+        #html = null
+        constructor() {
+            super();
+        }
+        connectedCallback() {
+            this.#html = document.querySelector(`TEMPLATE#${componentTagName}`).content || null;
+            this.appendChild(this.#html.cloneNode(true))
+            this.addEventListener("submit", this.eventSubmitDialog.bind(this))
+            this.addEventListener("reset", this.eventCloseDialog.bind(this))
+        }
+        eventCloseDialog(event) {
+            //event.target.reset() //redundante
+            this.close("")
+        }
+        eventSubmitDialog(event) {
+            const data = {}
+            const { target } = event
+            const inputbox = ["fileName", "column"]
+            inputbox.forEach((name) => {
+                const input = target.querySelector(`#${name}`)
+                if (input.type == "number") {
+                    data[name] = new Number(input.value)
+                } else {
+                    data[name] = input.value
+                }
+            })
+            this.close(JSON.stringify(data));
+        }
+    }
+    window.customElements.define(componentTagName, DialogExportAs, { extends: 'dialog' });
+</script>

@@ -1,0 +1,107 @@
+/***
+* https://learn.microsoft.com/es-es/windows/apps/design/style/segoe-ui-symbol-font
+*/
+@font-face {
+    font-display: block;
+    font-family: "Segoe MDL2 Assets'";
+    src: url("./font/Segoe MDL2 Assets'.ttf") format("ttf")
+}
+
+.mdl2 {
+    font-family: 'Segoe MDL2 Assets';
+}
+
+i.mdl2,
+.mdl2.normal {
+    font-size: 1em;
+    font-style: normal;
+}
+
+.mdl2.tiny {
+    font-size: 0.5em;
+}
+
+.mdl2.large {
+    font-size: 1.5em;
+}
+
+.mdl2.extra {
+    font-size: 2.5em;
+}
+
+.mdl2.addTo::before {
+    content: '\ecc8';
+}
+
+.mdl2.removeTo::before,
+.mdl2.removeFrom::before {
+    content: '\ecc9';
+}
+
+.mdl2.setting::before {
+    content: '\e713';
+}
+.mdl2.arrowUp::before,
+.mdl2.arrowUp8::before {
+    content: '\f0ad';
+}
+.mdl2.arrowDown::before,
+.mdl2.arrowDown8::before {
+    content: '\f0ae';
+}
+.mdl2.arrowRight::before,
+.mdl2.arrowRight8::before {
+    content: '\f0af';
+}
+.mdl2.arrowLeft::before,
+.mdl2.arrowLeft8::before {
+    content: '\f0ba';
+}
+
+.mdl2.openFolderHorizontal::before,
+.mdl2.folder::before {
+    content: '\ed25';
+}
+.mdl2.EraseTool::before ,
+.mdl2.erase::before {
+    content: '\e75c';
+}
+.mdl2.delete::before {
+    content: '\e74d';
+}
+.mdl2.save::before {
+    content: '\e74e';
+}
+.mdl2.knowledgeArticle,
+.mdl2.file::before {
+    content: '\ed60';
+}
+.mdl2.clipboardList::before,
+.mdl2.paste::before {
+    content: '\f0e3';
+}
+.mdl2.cut::before {
+    content: '\e8c6';
+}
+.mdl2.copy::before {
+    content: '\e8c8';
+}
+
+.mdl2.design::before{
+    content: '\eb3c';
+}
+.mdl2.color::before{
+    content: '\e790';
+}
+
+/*
+[class^="mdl2"],
+[class*="mdl2-"] {
+    font-family: 'Segoe MDL2 Assets';
+}
+
+[class^="mdl2-"]::before,
+[class*="mdl2-"]::before {
+    font-size: 1.8pc;
+}
+*/

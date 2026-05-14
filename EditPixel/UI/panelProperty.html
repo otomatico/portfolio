@@ -1,0 +1,102 @@
+<style>
+    panel-property table th {
+        background-color: var(--surface);
+        font-style: normal;
+        border: 1px solid var(--button-face);
+        width: 30%;
+    }
+
+    panel-property table td {
+        background-color: var(--button-highlight);
+        font-style: normal;
+        border: 1px solid var(--button-face);
+    }
+
+    panel-property table caption {
+        border: 2px outset var(--surface);
+        background-color: var(--surface);
+    }
+
+    panel-property table {
+        width: 100%;
+    }
+
+    panel-property {
+        display: block;
+        margin-left: 5px;
+        padding: 4px;
+        height: 100%;
+    }
+
+    .panel-box-inset {
+        border: 2px inset var(--surface);
+        background-color: var(--button-highlight);
+        height: calc(100% - 8px);
+    }
+</style>
+
+<template id="panel-property">
+    <div class="panel-box-inset">
+        <table>
+            <caption>Propiedades</caption>
+            <tbody>
+                <tr>
+                    <th></th>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</template>
+
+<script type="module">
+    import Current from "./Entity/Current.js"
+    const componentTagName = "panel-property"
+    export default class PanelProperty extends HTMLElement {
+        #html = null
+        constructor() {
+            super()
+        }
+
+        connectedCallback() {
+            this.#html = document.querySelector(`TEMPLATE#${componentTagName}`).content || null
+            this.appendChild(this.#html.cloneNode(true))
+        }
+
+        notify(model) {
+            const tbody = this.querySelector("table tbody")
+            tbody.innerHTML = ''
+            if (model instanceof Current) {
+                const property = ["width", "height", "palette"]
+                property.forEach((prop) => {
+                    const tr = tbody.insertRow(-1)
+                    const th = document.createElement("th")
+                    const td = document.createElement("td")
+                    tr.appendChild(th)
+                    tr.appendChild(td)
+                    tbody.appendChild(tr)
+                    th.textContent = prop
+                    if (Array.isArray(model[prop])) {
+                        model[prop].forEach((color) => {
+                            let span = document.createElement("SPAN")
+                            span.style.color = color
+                            span.textContent = '◼'
+                            td.appendChild(span)
+                        })
+                    } else {
+                        td.textContent = model[prop]
+                    }
+                })
+            }
+            if (!model) {
+                const tr = tbody.insertRow(-1)
+                const th = document.createElement("th")
+                const td = document.createElement("td")
+                tr.appendChild(th)
+                tr.appendChild(td)
+                tbody.appendChild(tr)
+            }
+        }
+    }
+    window.customElements.define(componentTagName, PanelProperty)
+</script>

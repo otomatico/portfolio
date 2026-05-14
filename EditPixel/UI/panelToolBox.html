@@ -1,0 +1,200 @@
+<style>
+    panel-toolbox>div {
+        margin-left: 5px;
+    }
+
+    .square button.mdl2 {
+        min-width: 28px;
+        min-height: 28px;
+    }
+
+    .tree-list-picture figure {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 10px;
+        margin: 3px 0;
+        align-items: center;
+    }
+
+    .tree-list-picture figure canvas {
+        width: 32px;
+        height: 32px;
+        background: url("../assets/img/grid-transparecy.svg") repeat;
+    }
+
+    .tree-list-picture figure:hover {
+        background-color: var(--button-face);
+    }
+
+    .tree-list-picture figure.focused figcaption {
+        outline: 1px dotted var(--window-frame);
+        outline-offset: 8px;
+    }
+
+    .tree-list-picture figure.focused {
+        outline: 0px;
+    }
+
+    .tree-list-picture {
+        height: calc(100% - 62px);
+        margin-top: 8px;
+    }
+
+    panel-toolbox {
+        display: block;
+    }
+</style>
+<template id="panel-toolbox">
+    <div class="group-button square">
+        <button class="mdl2 addTo" data-action="new" title="agregar"></button>
+        <button class="mdl2 erase" data-action="delete" title="eliminar"></button>
+        <button class="mdl2 arrowUp" data-action="up" title="subir"></button>
+        <button class="mdl2 arrowDown" data-action="down" title="bajar"></button>
+        <!--<button class="mdl2 color" data-action="color" title="paleta"></button>-->
+    </div>
+    <div class="tree-list-picture panel-box"></div>
+
+    <dialog is="new-sprite" class="window"></dialog>
+    <template id="panel-toolbox-figure">
+        <figure data-value="${index}" class="${focused}">
+            <canvas width="${width}px" height="${height}px" data-value="${index}"></canvas>
+            <figcaption data-value="${index}">${name}</figcaption>
+        </figure>
+    </template>
+</template>
+
+<script type="module">
+    import SpriteList from "./Entity/SpriteList.js"
+    import Current from "./Entity/Current.js"
+    import * as $global from "./global.js"
+
+    const COLOR = ["#e0f8d0", "#88c070", "#346856", "#081820"]
+    const componentTagName = "panel-toolbox"
+    export default class PanelToolBox extends HTMLElement {
+        #html = null
+        #items = new SpriteList()
+        #index = 0
+
+        constructor() {
+            super()
+        }
+
+        connectedCallback() {
+            this.#html = document.querySelector(`TEMPLATE#${componentTagName}`).content || null
+            this.appendChild(this.#html.cloneNode(true))
+            this.querySelector(".group-button").addEventListener("click", this.eventClickGroupButton.bind(this))
+
+            this.dialog = this.querySelector("dialog")
+            this.dialog.addEventListener("close", this.eventCloseDialogCreateSprite.bind(this))
+
+            this.treeList = this.querySelector(".tree-list-picture")
+            this.treeList.addEventListener("click", this.eventClickFigure.bind(this))
+        }
+
+        eventClickGroupButton(event) {
+            const { tagName, dataset } = event.target
+            if (tagName == "BUTTON") {
+                switch (dataset.action) {
+                    case "new":
+                        this.dialog.showModal()
+                        break
+                    case "delete":
+                        this.eventDelete(event)
+                        break
+                    case "up":
+                        this.eventMove(-1)
+                        break
+                    case "down":
+                        this.eventMove(1)
+                        break
+                    case "color":
+                        break
+                }
+
+            }
+        }
+        eventClickFigure(event) {
+            const { tagName, dataset } = event.target
+            switch (tagName) {
+                case 'FIGURE':
+                case 'CANVAS':
+                case 'FIGCAPTION':
+                    this.#index = parseInt(dataset.value)
+                    this.treeList.querySelector(".focused")?.classList.remove("focused")
+                    this.treeList.querySelectorAll("FIGURE")[this.#index].classList.add("focused")
+                    current.notify(this.#items.sprites[this.#index]);
+                    break;
+            }
+        }
+
+        eventCloseDialogCreateSprite(event) {
+            const { returnValue } = this.dialog
+            if (returnValue !== '') {
+                let data = JSON.parse(returnValue)
+                let element = new Current()
+                element.sprite = Array(parseInt(data.height)).fill().map(() => Array(parseInt(data.width)).fill(0))
+                element.palette = data.palette || COLOR
+                this.#items.sprites.push(element)
+                this.#items.sprites.forEach((item,index)=>item.index=index)
+                model.notify(this.#items)
+            }
+        }
+        eventMove(direction) {
+
+            let pivot = this.#index + direction
+            if (0 <= pivot && pivot < this.#items.sprites.length) {
+                this.#items.sprites[pivot].index = this.#index
+                this.#items.sprites[this.#index].index = pivot
+                this.#index = pivot
+                this.#items.sprites = this.#items.sprites.sort((a, b) => a.index - b.index)
+                model.notify(this.#items)
+            }
+        }
+        eventDelete(event) {
+            let sprites = this.#items.sprites
+            sprites = [...sprites.slice(0, this.#index), ...sprites.slice(this.#index + 1)]
+            this.#items.sprites = sprites
+            if (this.#index > sprites.length) {
+                this.#index = this.#index ? this.#index - 1 : 0
+            }
+            current.notify(this.#items.sprites[this.#index])
+            model.notify(this.#items)
+        }
+
+        notify(model) {
+            if (model instanceof SpriteList) {
+                this.#items = model
+                this.renderCanvas()
+            }
+            if (model instanceof Current) {
+                const item = this.#items.sprites[this.#index]
+                const ctx = this.querySelectorAll('canvas')[this.#index].getContext("2d")
+                $global.paint(ctx, { ...item })
+            }
+        }
+        renderCanvas() {
+            this.treeList.innerHTML = ''
+            this.#items?.sprites?.forEach((item, index) => {
+                const clone = this.querySelector(`#${componentTagName}-figure`).innerHTML;
+                let data = {
+                    focused: (index == this.#index ? 'focused' : ''),
+                    name: `Sprite - ${index}`,
+                    width: item.width,
+                    height: item.height,
+                    ...item
+                }
+
+                let HTML = Object.replaceEntries(clone, data)
+                this.treeList.insertAdjacentHTML('beforeend', HTML)
+            })
+            this.querySelectorAll("canvas").forEach((canvas, index) => {
+                let ctx = canvas.getContext("2d")
+                const item = this.#items.sprites[index]
+                let size = { x: 32 / item.width, y: 32 / item.height }
+                $global.paint(ctx, { ...item })
+            })
+        }
+    }
+    window.customElements.define(componentTagName, PanelToolBox)
+</script>
