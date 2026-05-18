@@ -1,6 +1,6 @@
 # REST API Client (HTA)
 
-**Un cliente gráfico ligero para probar APIs REST/GraphQL desde Windows, construido como una aplicación HTA (HTML Application).**
+Un cliente gráfico ligero para probar APIs REST/GraphQL desde Windows, construido como una aplicación HTA (HTML Application).
 
 ---
 
