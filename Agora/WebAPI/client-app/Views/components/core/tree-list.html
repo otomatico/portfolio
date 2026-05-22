@@ -1,0 +1,60 @@
+<script>
+    class TreeList extends HTMLElement  {
+        #item = {}
+        #html=null
+        constructor() {
+            super();
+        }
+        async connectedCallback() {
+            this.#html = this.querySelector("TEMPLATE").content||null;
+        }
+
+        static get observedAttributes() {
+            return ['item'];
+        }
+        async attributeChangedCallback(name, oldValue, newValue) {
+            if (name == 'item') {
+                this.item = JSON.parse(newValue)
+            } else {
+                this[`#${name}`] = newValue;
+            }
+        }
+
+        set item(value) {
+            this.#item = value;
+            this.innerHTML=''
+            let root = this.#processChild(this.#item);
+            this.appendChild(root);
+            root.open=true;
+        }
+        #processChild(currentElement) {
+            const replaceSummary=({dom,element,slot})=>{
+                dom.textContent = ' ' + element.name;
+                const template = this.#html.cloneNode(true)?.querySelector(slot)||null;
+                if(template){
+                    let inner = template.innerHTML;
+                    inner && (dom.innerHTML = Object.replaceEntries(inner,element))
+                }
+            }
+            let details = {}
+            if (currentElement.children.length) {
+                details = document.createElement('details')
+                let summary = document.createElement('summary')
+                details.appendChild(summary);
+                replaceSummary({dom:summary,element:currentElement,slot:"[slot=summary]"})
+                
+                let div = document.createElement('menu');
+                details.appendChild(div);
+                currentElement.children.forEach(item => {
+                    div.appendChild(this.#processChild(item))
+                })
+            } else {
+                details = document.createElement('li');
+                replaceSummary({dom:details,element:currentElement,slot:"[slot=li]"})
+            }
+            return details;
+        }
+    }
+
+    window.customElements.define('tree-list', TreeList);
+</script>

@@ -1,0 +1,235 @@
+<template id="dialog-template-field">
+  <style>
+    .input-group-text {
+      min-width: 150px;
+    }
+  </style>
+  <form id="formTemplate" class="card" method="dialog">
+    <header class="card-header">
+      <button type="button" class="btn btn-close btn-outline-danger float-end" data-target="close"></button>
+      <h3 class="card-title"><i class="bi" style="font-size: 150%;"></i> Campos de la Plantilla</h3>
+    </header>
+    <main class="card-body">
+      <div class="input-group">
+        <label for="name" class="input-group-text">Nombre</label>
+        <input type="text" class="form-control" id="name" placeholder="Nombre" />
+      </div>
+      <div class="input-group mt-1">
+        <label for="attributeName" class="input-group-text">Propiedad JSON</label>
+        <input type="text" class="form-control" id="attributeName" placeholder="Propiedad" />
+      </div>
+      <div class="input-group mt-1">
+        <label for="idType" class="input-group-text">Tipo Dato</label>
+        <select class="form-select" id="idType">
+          <option value="" selected>Selecione un tipo dato</option>
+        </select>
+        <select class="form-select" id="idMaster" disabled>
+          <option value="" selected>Selecione un Maestro</option>
+        </select>
+      </div>
+      <div class="input-group mt-1">
+        <label for="defaultValue" class="input-group-text">Valor por Defecto</label>
+        <input type="text" class="form-control" id="defaultValue" placeholder="Valor" />
+      </div>
+      <div class="row justify-content-end mt-1">
+        <div class="col text-start">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="required">
+            <label class="form-check-label" for="required">Obligatorio</label>
+          </div>
+        </div>
+        <div class="col text-end">
+          <button class="btn btn-primary bi bi-plus" id="add" type="button"> Agregar</button>
+        </div>
+      </div>
+
+      <div class="mt-3 overflow-y-auto" style="min-height: 180px;">
+        <data-table :class-table="table table-white table-bordered mt-2" :class-thead="table-light text-center"
+          style="width: 98%;">
+          <template>
+            <div slot="action" class="text-end">
+              <button type="button" title="Move Up" class="btn btn-outline-primary rounded-pill bi bi-arrow-up btn-sm"
+                data-action="moveUp" data-value="${index}">
+              </button>
+              <button type="button" title="Delete Option"
+                class="btn btn-outline-primary rounded-pill bi bi-trash btn-sm" data-action="delete"
+                data-value="${index}">
+              </button>
+            </div>
+          </template>
+        </data-table>
+      </div>
+    </main>
+    <footer class="card-footer text-end">
+      <button class="btn btn-success me-2" id="save" type="submit"> Guardar</button>
+      <button class="btn btn-secondary" data-target="close" id="cancel" type="reset"> Cancelar</button>
+    </footer>
+  </form>
+</template>
+<script type="module">
+  import API from './utils/API.js';
+  import * as Enum from './Enum.js';
+  import * as $global from './global.js';
+
+  export default class DialogField extends HTMLDialogElement {
+    #info = {};
+    masters = [];
+    header = [
+      { text: "#", value: "required" },
+      { text: "Nombre", value: "name" },
+      { text: "Propiedad", value: "attributeName" },
+      { text: "Tipo", value: "idType", style: { width: "20%" } },
+      { text: "Defecto", value: "defaultValue", style: { width: "20%" } },
+      { text: "", value: "index", slot: "action", style: { width: "20%" } }
+    ]
+    constructor() {
+      super();
+      this.typeField = Enum.typeField.map(item => item.field);
+    }
+
+    async connectedCallback() {
+      const clone = document.querySelector('#dialog-template-field').content.cloneNode(true);
+      this.appendChild(clone);
+      this.dataTable = this.querySelector("data-table")
+
+      const onCancel = this.eventCancel.bind(this);
+      const onSave = this.eventSave.bind(this);
+      const onAdd = this.eventAdd.bind(this);
+      const onChange = this.eventChangeSelect.bind(this);
+
+      this.querySelectorAll('[data-target="close"]').forEach(btn => {
+        btn.addEventListener("click", onCancel);
+      });
+      this.querySelector("#formTemplate").addEventListener("submit", onSave);
+      this.querySelector("#add").addEventListener("click", onAdd);
+      this.querySelector("#idType").addEventListener("change", onChange);
+      this.#loadTypeField();
+    }
+    async openDialog(info) {
+      
+      await this.#getMaster()
+      this.#loadMasters();
+      const icon = this.querySelector("div.card-title i.bi");
+      if (info.idTemplate) {
+        this.#info = info;
+        icon.classList.remove("bi-plus-circle");
+        icon.classList.add("bi-pencil-square");
+      } else {
+        this.#info = this.#default();
+        icon.classList.remove("bi-pencil-square");
+        icon.classList.add("bi-plus-circle");
+      }
+      this.#renderTable(this.#info.data);
+      this.showModal();
+    }
+
+    eventSave(event) {
+      this.querySelector('form').reset()
+      this.close(JSON.stringify(this.#info));
+    }
+    eventCancel(event) {
+      this.querySelector('form').reset()
+      this.close("");
+    }
+
+    eventAdd(event) {
+      let idTemplate = this.#info.idTemplate || null;
+      let count = this.#info.data.length;
+      count = count == 0 ? 0 : count - 1
+      let item = {
+        "idField": null,
+        "idTemplate": idTemplate,
+        "idType": this.querySelector("#idType").value,
+        "idMaster": this.querySelector("#idMaster").value || null,
+        "name": this.querySelector("#name").value,
+        "attributeName": this.querySelector("#attributeName").value,
+        "defaultValue": this.querySelector("#defaultValue").value,
+        "required": this.querySelector("#required").checked,
+        "place": (this.#info.data[count]?.place??0) + 1 ,
+        "status": Enum.status.Inserted
+      }
+      this.#info.data.push(item);
+      this.querySelector('form').reset();
+      this.#renderTable(this.#info.data);
+    }
+
+    eventClickBtn(event) {
+      const target = event.target;
+      if (target.tagName === "BUTTON") {
+        if (target.dataset.action == "delete") {
+          this.eventDelete(event)
+        }
+        if (target.dataset.action == "moveUp") {
+          this.eventMove(event, -1)
+        }
+      }
+    }
+
+    eventDelete(event) {
+      const index = parseInt(event.target.dataset.value);
+      this.#info.data[index].status = Enum.status.Deleted;
+      this.#renderTable(this.#info.data);
+    }
+
+    eventMove(event, move) {
+      const index = parseInt(event.target.dataset.value);
+      this.#info.data[index + move].place = index;
+      this.#info.data[index].place = index + move;
+      this.#info.data[index].status = this.#info.data[index].status || Enum.status.Updated;
+      this.#info.data[index + move].status = this.#info.data[index + move].status || Enum.status.Updated;
+      this.#info.data = this.#info.data.sort((a, b) => a.place - b.place);
+      this.#renderTable(this.#info.data);
+    }
+    eventChangeSelect(event) {
+      const value = parseInt(event.target.value);
+      const comboSelection = this.typeField.filter(item => item == "Seleccion" || item == "Seleccion Multiple");
+      this.querySelector("#idMaster").disabled = !comboSelection.includes(this.typeField[value]);
+    }
+    #default() {
+      return { idMaster: null, data: [], Updated: false };
+    }
+    #loadTypeField(value = null) {
+      const cbTypeField = this.querySelector("#idType");
+      cbTypeField.querySelectorAll("[value]").forEach(item => item.value != '' && cbMaster.removeChild(item));
+      let list = Enum.typeField.filter((item, index) => index > 0)
+      list = $global.convertToOptionList(list, { text: 'field', value: 'idType' });
+      $global.loadComboBox(list, cbTypeField, value)
+    }
+    #loadMasters(value = null) {
+      const cbMaster = this.querySelector("#idMaster");
+      cbMaster.querySelectorAll("[value]").forEach(item => item.value != '' && cbMaster.removeChild(item));
+      let list = $global.convertToOptionList(this.masters, { text: 'name', value: 'idMaster' });
+      $global.loadComboBox(list, cbMaster, value)
+
+    }
+    async #getMaster() {
+      let response = await API.get("api/master")
+      if (response.ok) {
+        this.masters = await response.json();
+      }
+    }
+    #renderTable(list) {
+      this.dataTable.setAttribute("header", JSON.stringify(this.header));
+      const listTable = list.map((item, index) => {
+        const element = { ...item };
+        element.required = item.required ? '🔑' : '';
+        element.idType = Enum.typeField.filter(f => f.idType == item.idType)[0]?.field;
+        element.index = index;
+        return element;
+
+      })
+      this.dataTable.setAttribute("items", JSON.stringify(listTable))
+
+      const btnClick = this.eventClickBtn.bind(this);
+      const textClass = ['', 'text-primary', 'text-danger', 'text-success'];
+      this.dataTable.querySelectorAll("tbody tr").forEach((tr, index) => {
+        tr.addEventListener("click", btnClick);
+        const status = list[index]?.status || Enum.status.None
+        if (status > Enum.status.None) {
+          tr.querySelectorAll("td").forEach(td => td.classList.add(textClass[status]))
+        }
+      })
+    }
+  }
+  window.customElements.define("dialog-template-field", DialogField, { extends: "dialog" });
+</script>

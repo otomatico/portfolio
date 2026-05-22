@@ -1,0 +1,155 @@
+<template id="dialog-option">
+  <form id="formMasterOption" class="card" method="dialog">
+    <header class="card-header">
+      <button type="button" class="btn btn-close btn-outline-danger float-end" data-target="close"></button>
+      <h3 class="card-title"><i class="bi" style="font-size: 150%;"></i> Opciones de Maestro</h3>
+    </header>
+    <main class="card-body">
+      <div class="input-group">
+        <label for="name" class="input-group-text btn-secondary">Opcion</label>
+        <input type="text" class="form-control" id="name" placeholder="Nombre" />
+        <input type="text" class="form-control" id="value" placeholder="Valor" />
+        <button class="btn btn-success bi bi-plus" data-action="add" type="button"></button>
+      </div>
+      <div class="mt-3 overflow-y-auto" style="height: 380px;">
+        <data-table style="width: 98%;" 
+          :class-table="table table-white table-bordered mt-2"
+          :class-thead="table-light text-center">
+          <template>
+            <div slot="action" class="text-end">
+              <button type="button" title="Move Up" class="btn btn-outline-primary rounded-pill bi bi-arrow-up btn-sm"
+                data-action="moveUp"
+                data-value="${index}">
+                <button type="button" title="Delete Option"
+                  class="btn btn-outline-primary rounded-pill bi bi-trash btn-sm" data-action="delete" data-value="${index}">
+                </button>
+            </div>
+          </template>
+        </data-table>
+      </div>
+    </main>
+    <footer class="card-footer text-end">
+      <button class="btn btn-success me-2" id="save" type="submit"> Guardar</button>
+      <button class="btn btn-secondary" data-target="close" id="cancel" type="reset"> Cancelar</button>
+    </footer>
+  </form>
+</template>
+<script type="module">
+  import * as Enum from './Enum.js';
+
+  export default class DialogMasterOption extends HTMLDialogElement {
+    header = [
+      { text: "Nombre", value: "name" },
+      { text: "Valor", value: "value", style: { width: "30%" } },
+      { text: "", value: "index", slot: "action", style: { width: "20%" } }
+    ]
+    #info = {};
+
+    constructor() {
+      super();
+    }
+    connectedCallback() {
+      const clone = document.querySelector('#dialog-option')?.content.cloneNode(true);
+      this.appendChild(clone);
+      const onClick = this.eventClick.bind(this);
+      const onSave = this.eventSave.bind(this);
+      this.addEventListener("click", onClick);
+      this.form = this.querySelector("form")
+      this.form.addEventListener("submit", onSave);
+      this.dataTable = this.querySelector("data-table")
+      this.dataTable.setAttribute("header", JSON.stringify(this.header));
+    }
+
+    async openDialog(info) {
+      this.showModal();
+
+      const icon = this.querySelector("div.card-title i");
+      if (info.idMaster) {
+        this.#info = info;
+        icon.className = "bi bi-pencil-square";
+      } else {
+        this.#info = this.#defaultMaster();
+        icon.className = "bi bi-plus-circle";
+      }
+      this.#renderTable(this.#info.data);
+    }
+
+    eventSave(event) {
+      this.form.reset();
+      this.close(JSON.stringify(this.#info.data));
+    }
+    eventCancel(event) {
+      this.form.reset();
+      this.close("");
+    }
+
+    eventAdd(event) {
+      let idMaster = this.#info.idMaster || null;
+      let item = {
+        "idMaster": idMaster,
+        "idOption": null,
+        "name": this.querySelector("#name").value,
+        "value": this.querySelector("#value").value,
+        "place": this.#info.data.length,
+        "status": Enum.status.Inserted
+      }
+      this.form.reset();
+      this.#info.data.push(item);
+      this.#renderTable(this.#info.data);
+    }
+
+    eventClick(event) {
+      const {tagName,dataset} = event.target;
+      if (tagName === "BUTTON") {
+        if (dataset.action == "delete") {
+          this.eventDelete(event)
+        }
+        if (dataset.action == "moveUp") {
+          this.eventMove(event, -1)
+        }
+        if (dataset.action == "add") {
+          this.eventAdd(event)
+        }
+        if (dataset.target == "close") {
+          this.eventCancel(event)
+        }
+      }
+    }
+
+    eventDelete(event) {
+      const index = parseInt(event.target.dataset.value);
+      this.#info.data[index].status = Enum.status.Deleted;
+      this.#renderTable(this.#info.data);
+    }
+
+    eventMove(event, move) {
+      const index = parseInt(event.target.dataset.value);
+      this.#info.data[index + move].place = index;
+      this.#info.data[index].place = index + move;
+      this.#info.data[index].status = this.#info.data[index].status || Enum.status.Updated;
+      this.#info.data[index + move].status = this.#info.data[index + move].status || Enum.status.Updated;
+      this.#info.data = this.#info.data.sort((a, b) => a.place - b.place);
+      this.#renderTable(this.#info.data);
+    }
+
+    #defaultMaster() {
+      return { idMaster: null, data: [], Updated: false };
+    }
+    #renderTable(data){
+      data.forEach((item,index)=>{
+        item.place = index+1
+        item.index = index
+      })
+      this.dataTable.setAttribute("items", JSON.stringify(data));
+      const textClass = ['', 'text-primary', 'text-danger', 'text-success'];
+      this.dataTable.querySelectorAll("tbody tr").forEach((tr, index) => {
+        const status = data[index]?.status || Enum.status.None
+        if (status > Enum.status.None) {
+          tr.querySelectorAll("td").forEach(td => td.classList.add(textClass[status]))
+        }
+      })
+    }
+  }
+
+  window.customElements.define("dialog-master-option", DialogMasterOption, { extends: "dialog" });
+</script>

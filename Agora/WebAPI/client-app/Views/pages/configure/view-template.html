@@ -1,0 +1,221 @@
+<template id="template-template">
+    <div class="card text-bg-light">
+        <div class="card-header">
+            <h2 class="float-start">Plantillas</h2>
+            <span class="float-end mt-1 me-1">
+                <button class="btn btn-primary bi bi-file-plus" title="New Template" data-action="new">Nuevo</button>
+            </span>
+        </div>
+        <div class="card-body">
+            <data-table id="templateList" style="width: 98%;" :class-table="table table-white table-bordered mt-2"
+                :class-thead="table-light text-center">
+                <template>
+                    <div slot="action" class="text-end">
+                        <button type="button" title="Edit Template"
+                            class="btn btn-outline-primary rounded-pill bi bi-pencil-fill btn-sm" data-action="edit"
+                            data-value="${index}">
+                        </button>
+                        <button type="button" title="Delete Template"
+                            class="btn btn-outline-primary rounded-pill bi bi-trash btn-sm" data-action="delete"
+                            data-value="${idTemplate}"></button>
+                        <button type="button" title="Edit Field"
+                            class="btn btn-outline-primary rounded-pill bi bi-list-check btn-sm" data-action="field"
+                            data-value="${idTemplate}"></button>
+                        <button type="button" title="Edit Children allowed"
+                            class="btn btn-outline-primary rounded-pill bi bi-diagram-2 btn-sm" data-action="children"
+                            data-value="${idTemplate}"></button>
+                    </div>
+                </template>
+            </data-table>
+        </div>
+    </div>
+    <dialog is="dialog-template" style="width:640px"></dialog>
+    <dialog is="dialog-template-field" style="width:760px"></dialog>
+    <dialog is="dialog-template-children" style="width:760px"></dialog>
+</template>
+<script type="module">
+    import API from './utils/API.js'
+    import { status as Status } from './Enum.js'
+
+    class TemplateView extends HTMLElement {
+        header = [
+            { text: "#", style: { width: "1%" } },
+            { text: "Plantilla", value: "name" },
+            { text: "Fecha Modificacion", value: "modifyDate", style: { width: "30%" } },
+            { text: "", value: "index", slot: "action", style: { width: "30%" } }
+        ]
+        templates = []
+        constructor() {
+            super()
+        }
+        connectedCallback() {
+            const template = document.querySelector('#template-template')?.content?.cloneNode(true)
+            this.appendChild(template)
+            this.dataTable = this.querySelector("data-table#templateList")
+            this.querySelectorAll("dialog").forEach((dialog) => {
+                let onClose = null
+                switch (dialog.getAttribute('is')) {
+                    case 'dialog-template':
+                        onClose = this.eventCloseTemplate.bind(this)
+                        break
+                    case 'dialog-template-field':
+                        onClose = this.eventCloseField.bind(this)
+                        break
+                    case 'dialog-template-children':
+                        onClose = this.eventCloseChildren.bind(this)
+                        break
+                }
+                onClose == null || dialog.addEventListener("close", onClose)
+            })
+            const onCreate = this.eventNew.bind(this)
+            const onClickTable = this.eventClickBtn.bind(this)
+
+            this.querySelector("button[data-action='new']").addEventListener('click', onCreate)
+            this.dataTable.addEventListener('click', onClickTable)
+            this.dataTable.setAttribute("header", JSON.stringify(this.header))
+            this.getTemplate()
+        }
+
+        async getTemplate() {
+            let response = await API.get("api/template")
+            if (response.ok) {
+                let data = await response.json()
+                this.templates = [...data]
+                data.forEach((item, index) => {
+                    item.modifyDate = item.modifyDate.replace(/(T|Z)|(\+.*)/g, ' ').trim()
+                    item.index = index
+                })
+                this.dataTable.setAttribute("items",JSON.stringify(data));
+            }
+        }
+        eventClickBtn(event) {
+            const { tagName, dataset } = event.target
+            if (tagName === "BUTTON") {
+                switch (dataset.action) {
+                    case "edit":
+                        this.eventEdit(event)
+                        break
+                    case "delete":
+                        this.eventDelete(event)
+                        break
+                    case "field":
+                        this.eventEditField(event)
+                        break
+                    case "children":
+                        this.eventEditChildren(event)
+                        break
+                }
+            }
+        }
+        eventNew(event) {
+            this.querySelector('[is=dialog-template]').openDialog(null)
+        }
+        eventEdit(event) {
+            const index = event.target.dataset.value
+            const data = this.templates[index]
+            this.querySelector('[is=dialog-template]').openDialog(data)
+        }
+        async eventDelete(event) {
+            const idTemplate = event.target.dataset.value
+            const response = await API.delete(`api/template/${idTemplate}`)
+            if (response.ok) {
+                this.getTemplate()
+            }
+        }
+
+        async eventEditField(event) {
+            const idTemplate = event.target.dataset.value
+            let response = await API.get(`api/template/field/${idTemplate}`)
+            if (response.ok) {
+                let info = await response.json()
+                this.querySelector('[is=dialog-template-field]').openDialog({ "idTemplate": idTemplate, data: info })
+            }
+        }
+        async eventEditChildren(event) {
+
+            const idTemplate = event.target.dataset.value
+            let response = await API.get(`api/template/children/${idTemplate}`)
+            if (response.ok) {
+                let info = await response.json()
+                const dialog = this.querySelector('[is=dialog-template-children]')
+                dialog.template = this.templates
+                dialog.openDialog({ "idTemplate": idTemplate, data: info })
+            }
+        }
+
+        async eventCloseTemplate(event) {
+            const { returnValue } = event.target
+            if (returnValue !== "") {
+                let data = JSON.parse(returnValue)
+                let response = {}
+                if (data.idTemplate !== null) {
+                    response = await API.post('api/template', JSON.stringify(data))
+                } else {
+                    response = API.put('api/template', JSON.stringify(data))
+                }
+                if (response.ok) {
+                    this.getTemplate()
+                } else {
+                    throw new Error(`Error ${response.status}:No se pudo completar la operacion`)
+                }
+            }
+        }
+        async eventCloseField(event) {
+            const { returnValue } = event.target
+            if (returnValue !== "") {
+                let { data } = JSON.parse(returnValue)
+                this.processSaveData(data, 'api/template/field')
+            }
+        }
+        async eventCloseChildren(event) {
+            const { returnValue } = event.target
+            if (returnValue !== "") {
+                let data = JSON.parse(returnValue)
+                await this.processSaveData(data, 'api/template/children', { primaryKey: 'idTemplate', masterKey: 'idTemplateParent' })
+            }
+        }
+
+        async processSaveData(data, url, { primaryKey = 'idField', masterKey = '' }) {
+            let response = {}
+            if (data) {
+                let dataDelete = data.filter(item => item.status == Status.Deleted && item[primaryKey] !== null)
+                let dataInsert = data.filter(item => item.status == Status.Inserted)
+                let dataUpdate = data.filter(item => item.status == Status.Updated)
+
+                if (dataUpdate.length > 0) {
+                    dataUpdate = dataUpdate.map(item => {
+                        const { status, index, ...res } = item
+                        return res
+                    })
+                    response = await API.post(url, JSON.stringify(dataUpdate))
+                    if (!response.ok) {
+                        throw new Error(`Error ${response.status}:No se pudo Actualizar`)
+                    }
+                }
+                if (dataInsert.length > 0) {
+                    dataInsert = dataInsert.map(item => {
+                        const { status, index, ...res } = item
+                        return res
+                    })
+                    response = await API.put(url, JSON.stringify(dataInsert))
+                    if (!response.ok) {
+                        throw new Error(`Error ${response.status}: No se pudo Insertar`)
+                    }
+                }
+                if (dataDelete.length > 0) {
+                    for (let index = 0; index < dataDelete.length; index++) {
+                        if (masterKey !== '') {
+                            url = `${url}/${dataDelete[index][masterKey]}`
+                        }
+                        response = await API.delete(`${url}/${dataDelete[index][primaryKey]}`)
+                        if (!response.ok) {
+                            throw new Error(`Error ${response.status}:No se pudo borrar ${dataDelete[index][primaryKey]}`)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    window.customElements.define('view-template', TemplateView)
+</script>

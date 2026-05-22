@@ -1,0 +1,81 @@
+<template id="menu-template">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#flush-collapse${index}" aria-expanded="false" aria-controls="flush-collapse${index}">
+                ${caption}
+            </button>
+        </h2>
+        <div id="flush-collapse${index}" class="accordion-collapse collapse" data-bs-parent="#${parent}">
+            <div class="accordion-body bg-body"></div>
+        </div>
+    </div>
+</template>
+<script type="module">
+    import API from './utils/API.js';
+    import { viewInMain } from './global.js';
+    class UIMenu extends HTMLElement {
+        constructor() {
+            super();
+            this.classList.add("accordion", "accordion-flush")
+            this.id = "accordionFlushMainMenu"
+            //this.insertAdjacentHTML('afterbegin',`<menu class="accordion accordion-flush" id="accordionFlushMainMenu"></menu>`)
+
+        }
+        async connectedCallback() {
+            this.loadMenu(this)
+            this.addEventListener("click", this.eventClickLink)
+        }
+        async loadMenu(menu) {
+            let response = await API.get("/pages/menu.json")
+            if (response.ok) {
+                let jsonMenu = await response.json()
+                jsonMenu.forEach((item, index) => {
+                    let inner = document.querySelector('#menu-template').content.cloneNode(true)
+
+                    item.children.map(child => {
+                        const a = document.createElement("a")
+                        a.classList.add("d-block", "link-underline-light", "p-2")
+                        a.href = child.href
+                        a.append(child.text)
+                        if (child.className) {
+                            let classItem = child.className.split(' ')
+                            classItem.forEach(prop => a.classList.add(prop));
+                        }
+                        if (child.component) {
+                            a.dataset.component = child.component
+                        }
+                        return a;
+                    }).forEach(link => {
+                        inner.querySelector("div.accordion-body").appendChild(link);
+                    });
+
+                    let parameter = Object.entries({ "caption": item.text, "index": index, "parent": this.id })
+                    let innerDOM = inner.children[0].getInnerHTML();
+                    parameter.forEach(([prop, value]) => {
+                        let key = `\$\{${prop}\}`;
+                        innerDOM = innerDOM.replaceAll(key, value)
+                    });
+                    menu.insertAdjacentHTML("beforeend", innerDOM);
+                })
+            }
+        }
+        eventClickLink(event) {
+            if (event.target.tagName === 'A') {
+                event.preventDefault();
+                if (!event.target.className.includes('disabled')) {
+                    const divMain = document.querySelector('#mainDraw');
+
+                    for (let index = divMain.children.length - 1; index >= 0; index--) {
+                        if (divMain.children[index].tagName !== "TEMPLATE") {
+                            divMain.children[index].remove()
+                        }
+                    }
+                    viewInMain({ componentName: event.target.dataset.component, main: divMain });
+                }
+            }
+        }
+    }
+
+    window.customElements.define('ui-menu', UIMenu);
+</script>

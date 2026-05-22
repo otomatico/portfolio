@@ -1,0 +1,153 @@
+<template id="template-node">
+    <div class="card text-bg-light">
+        <div class="card-header">
+            <h2 class="float-start">Arbol</h2>
+            <span class="float-end mt-1 me-1">
+                <button class="btn btn-primary bi bi-file-plus" title="New Tree" data-action="new">Nuevo</button>
+            </span>
+        </div>
+        <div class="card-body">
+            <data-table :class-table="table table-white table-bordered" :class-thead="table-light text-center">
+                <template>
+                    <div slot="action" class="text-end">
+                        <button type="button" title="View Tree"
+                            class="btn btn-outline-primary rounded-pill bi bi-eye btn-sm" data-action="view"
+                            data-value="${idNode}">
+                        </button>
+                        <button type="button" title="Delete Tree"
+                            class="btn btn-outline-primary rounded-pill bi bi-trash btn-sm" data-action="delete"
+                            data-value="${idNode}"></button>
+                    </div>
+                </template>
+            </data-table>
+        </div>
+    </div>
+    <dialog is="dialog-node-root" style="width:640px"></dialog>
+</template>
+<script type="module">
+    import API from './utils/API.js';
+    import { viewInMain } from './global.js';
+    class NodeRootView extends HTMLElement {
+        header = [
+            { text: "#", style: { width: "1%" } },
+            { text: "Nombre", value: "name" },
+            { text: "Tipo Plantilla", value: "nameTemplate", style: { width: "30%" } },
+            { text: "Actualizado", value: "modifyDate", style: { width: "20%" } },
+            { text: "", slot: "action", style: { width: "20%" } }
+        ]
+
+        constructor() {
+            super();
+            this.nodes = []
+        }
+        async connectedCallback() {
+            const newNode = this.eventNew.bind(this)
+            const closeNode = this.eventClose.bind(this)
+            const clone = document.querySelector('#template-node').content.cloneNode(true);
+            this.append(clone)
+
+            await this.getNodes()
+
+            this.dialogNode = this.querySelector("dialog[is='dialog-node-root']")
+            this.dialogNode.addEventListener("close", closeNode)
+            this.querySelector("button[data-action='new']").addEventListener('click', newNode)
+
+            this.dataTable = this.querySelector("data-Table");
+            this.dataTable.setAttribute("header", JSON.stringify(this.header));
+            this.#renderTable(this.nodes)
+
+        }
+        async getNodes() {
+            let response = await API.get("api/node/root")
+            if (response.ok) {
+                this.nodes = await response.json()
+            }
+        }
+        async eventClickBtn(event) {
+            const { tagName, dataset } = event.target
+            if (tagName === "BUTTON") {
+                switch (dataset.action) {
+                    case "edit":
+                        this.eventEdit(event);
+                        break;
+                    case "delete":
+                        this.eventDelete(event);
+                        break;
+                    case "clone":
+                        this.eventClone(event);
+                        break;
+                    case "view":
+                        this.eventViewNode(event);
+                        break;
+                }
+            }
+        }
+        async eventDelete(event) {
+            const idNode = event.target.dataset.value
+            if (idNode) {
+                const response = await API.delete(`api/node/root/${idNode}`)
+                if (response.ok) {
+                    await this.getNodes()
+                    this.#renderTable(this.nodes)
+                }
+            }
+        }
+        async eventEdit(event) {
+            const idNode = event.target.dataset.value
+            const { ...data } = this.nodes.filter(node => node.idNode == idNode)[0] ?? null
+            this.dialogNode.openDialog(data)
+            this.dialogNode.querySelector('JSON-VALUES').setAttribute("editable", true);
+        }
+        async eventClone(event) {
+            const idNode = event.target.dataset.value
+            const { ...data } = this.nodes.filter(node => node.idNode == idNode)[0] ?? null
+            if (data) {
+                data.idNode = null;
+                this.dialogNode.openDialog(data)
+                this.dialogNode.querySelector('JSON-VALUES').setAttribute("editable", false);
+            }
+        }
+        async eventNew(event) {
+            this.dialogNode.openDialog(null)
+        }
+        eventViewNode(event) {
+            const divMain = document.querySelector('#mainDraw');
+            for (let index = divMain.children.length - 1; index >= 0; index--) {
+                if (divMain.children[index].tagName !== "TEMPLATE") {
+                    divMain.children[index].remove()
+                }
+            }
+            viewInMain({ componentName: "view-node", main: divMain });
+            document.querySelector('view-node').idNodeRoot = event.target.dataset.value;
+        }
+        async eventClose(event) {
+            let info = this.dialogNode.returnValue;
+            if (info) {
+                let response;
+                const data = JSON.parse(info)
+                const { nameTemplate, ...res } = data;
+                res.modifyDate = (new Date()).toISOString();
+                info = JSON.stringify(res);
+                if (data.idNode) {
+                    response = await API.post('api/node/root/', info)
+                } else {
+                    response = await API.put('api/node/root/', info)
+                }
+                if (response.ok) {
+                    await this.getNodes()
+                    this.#renderTable(this.nodes)
+                }
+            }
+        }
+        #renderTable(list) {
+            list.forEach(item => item.modifyDate = item.modifyDate.replace(/T|(\+02:00)/g, ' ').trim())
+            this.dataTable.setAttribute("items", JSON.stringify(list))
+            const btnClick = this.eventClickBtn.bind(this);
+            this.dataTable.querySelectorAll("tbody tr").forEach((tr, index) => {
+                tr.addEventListener("click", btnClick);
+            })
+        }
+    }
+
+    window.customElements.define('view-node-root', NodeRootView);
+</script>

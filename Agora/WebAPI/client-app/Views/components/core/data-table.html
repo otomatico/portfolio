@@ -1,0 +1,93 @@
+<script>
+    class DataTable extends HTMLElement {
+        #items = []
+        #header = []
+        constructor() {
+            super()
+            this.template = this.querySelector('template')?.content
+        }
+        static get observedAttributes() {
+            return ['items', 'header']
+        }
+        attributeChangedCallback(name, oldValue, newValue) {
+            let table = this.querySelector('TABLE')
+            if (table) this.removeChild(table)
+            if (name == 'header') {
+                this.#header = JSON.parse(newValue)
+            }
+            if (name == 'items') {
+                this.#items = JSON.parse(newValue)
+            }
+            this.render()
+        }
+        connectedCallback() {
+            this.render()
+        }
+        createHeader() {
+            const thead = document.createElement('THEAD')
+            const tr = thead.insertRow(-1)
+            this.#header?.forEach(({ text, style, className }) => {
+                const th = document.createElement('TH')
+                th.textContent = text
+                if (style) {
+                    Object.entries(style).forEach(([prop, val]) => {
+                        th.style.setProperty(prop, val)
+                    })
+                }
+                if (className) {
+                    th.className = className
+                }
+                tr.appendChild(th)
+            })
+            return thead
+        }
+        createBody() {
+            const tbody = document.createElement('TBODY')
+            this.#items?.forEach(item => {
+                const tr = tbody.insertRow(-1)
+                this.#header.forEach(head => {
+                    const { slot, value } = head
+                    const td = tr.insertCell(-1)
+                    if (slot) {
+                        let clone = this.template.cloneNode(true)
+                        clone = clone.querySelector(`[slot=${slot}]`)
+                        if (clone) {
+                            clone.innerHTML = Object.replaceEntries(clone.innerHTML, item)
+                            td.appendChild(clone)
+                        }
+                    } else {
+                        td.textContent = item[value]
+                    }
+                })
+            })
+            if (!(this.#items?.length)) {
+                const tr = tbody.insertRow(-1)
+                const td = tr.insertCell(-1)
+                td.textContent = "No hay datos"
+                td.colSpan = this.#header.length ?? 1
+                td.style.textAlign = "center"
+            }
+            return tbody
+        }
+
+        render() {
+            const table = document.createElement('TABLE')
+            const thead = this.createHeader()
+            const tbody = this.createBody()
+
+            const tableClass = this.getAttribute(':class-table') || this.dataset.class
+            const theadClass = this.getAttribute(':class-thead') || this.dataset.thead
+            const tbodyClass = this.getAttribute(':class-tbody') || this.dataset.tbody
+
+            table.appendChild(thead)
+            table.appendChild(tbody)
+            this.appendChild(table)
+
+            if (tableClass) table.className = tableClass
+            if (theadClass) thead.className = theadClass
+            if (tbodyClass) tbody.className = tbodyClass
+        }
+    }
+
+    window.customElements.define("data-table", DataTable)
+</script>

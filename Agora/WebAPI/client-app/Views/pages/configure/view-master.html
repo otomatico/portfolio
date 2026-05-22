@@ -1,0 +1,180 @@
+<template id="master-template">
+    <div class="card text-bg-light">
+        <div class="card-header">
+            <h2 class="float-start">Maestro</h2>
+            <span class="float-end mt-1 me-1">
+                <button class="btn btn-primary bi bi-file-plus" title="New Master" data-action="new">Nuevo</button>
+            </span>
+        </div>
+        <div class="card-body">
+            <data-table id="masterList" style="width: 98%;" 
+                :class-table="table table-white table-bordered mt-2"
+                :class-thead="table-light text-center">
+                <template>
+                    <div slot="action" class="text-end">
+                        <button type="button" title="Edit Master" class="btn btn-outline-primary rounded-pill btn-sm bi bi-pencil-fill"
+                            data-action="edit" data-value="${index}">
+                        </button>
+                        <button type="button" title="Delete Master" class="btn btn-outline-primary rounded-pill btn-sm bi bi-trash"
+                            data-action="delete" data-value="${idMaster}">
+                        </button>
+                        <button type="button" title="Modify Master Options"
+                            class="btn btn-outline-primary rounded-pill btn-sm bi bi-list-check" data-action="modify"
+                            data-value="${idMaster}">
+                        </button>
+                    </div>
+                </template>
+            </data-table>
+        </div>
+    </div>
+    <dialog is="dialog-master" style="width:640px"></dialog>
+    <dialog is="dialog-master-option" style="width:640px"></dialog>
+</template>
+<script type="module">
+    import API from './utils/API.js'
+    import { status as Status } from './Enum.js'
+
+    class MasterView extends HTMLElement {
+        header = [
+            { text: "#", style: { width: "1%" } },
+            { text: "Maestro", value: "name" },
+            { text: "Fecha Modificacion", value: "modifyDate", style: { width: "30%" } },
+            { text: "", value: "index", slot: "action", style: { width: "30%" } }
+        ]
+        masters = []
+        constructor() {
+            super()
+        }
+        connectedCallback() {
+            const clone = document.querySelector('#master-template')?.content?.cloneNode(true)
+            this.append(clone)
+            const newMaster = this.eventNew.bind(this)
+            const onClickTable = this.eventClickBtn.bind(this)
+            this.querySelector("button[data-action='new']").addEventListener('click', newMaster)
+            this.dataTable = this.querySelector("data-table#masterList")
+            this.dataTable.setAttribute("header", JSON.stringify(this.header))
+            this.dataTable.addEventListener("click", onClickTable,true)
+
+            this.querySelectorAll("dialog").forEach((dialog) => {
+                let onClose = null
+                switch (dialog.getAttribute("is")) {
+                    case 'dialog-master':
+                        onClose = this.eventCloseMaster.bind(this)
+                        break
+                    case 'dialog-master-option':
+                        onClose = this.eventCloseOption.bind(this)
+                        break
+                }
+                dialog.addEventListener("close", onClose)
+            })
+            this.getMaster()
+        }
+        async getMaster() {
+            let response = await API.get("api/master")
+            if (response.ok) {
+                let data = await response.json()
+                this.masters = [...data]
+                data.forEach((item, index) => {
+                    item.modifyDate = item.modifyDate.replace(/(T|Z)|(\+.*)/g, ' ').trim()
+                    item.index = index
+                })
+                this.dataTable.setAttribute("items",JSON.stringify(data))
+            }
+        }
+        eventClickBtn(event) {
+            const { tagName, dataset } = event.target
+            if (tagName === "BUTTON") {
+                switch (dataset.action) {
+                    case "edit":
+                        this.eventEdit(event)
+                        break
+                    case "delete":
+                        this.eventDelete(event)
+                        break
+                    case "modify":
+                        this.eventModify(event)
+                        break
+                }
+            }
+        }
+        eventNew(event) {
+            this.querySelector("dialog[is=dialog-master]").openDialog(null)
+        }
+        async eventDelete(event) {
+            const idMaster = event.target.dataset.value
+            const response = await API.delete(`api/master/${idMaster}`)
+            if (response.ok) {
+                await this.getMaster()
+            }
+        }
+        eventEdit(event) {
+            const index = event.target.dataset.value
+            const data = this.masters[index]
+            this.querySelector("dialog[is=dialog-master]").openDialog(data)
+        }
+
+        async eventModify(event) {
+            const idMaster = event.target.dataset.value
+            let response = await API.get(`api/master/option/${idMaster}`)
+            if (response.ok) {
+                let info = await response.json()
+                this.querySelector("dialog[is=dialog-master-option]").openDialog({ idMaster: idMaster, data: info })
+            }
+        }
+        async eventCloseMaster(event) {
+            const { returnValue } = event.target
+            if (returnValue !== "") {
+                let {index,...data} = JSON.parse(returnValue)
+                let response = {}
+                if (data.idMaster !== null) {
+                    response = await API.post('api/master', JSON.stringify(data))
+                } else {
+                    response = await API.put('api/master', JSON.stringify(data))
+                }
+                if (response.ok) {
+                    await this.getMaster()
+                } else {
+                    throw new Error(`Error ${response.status}:No se pudo completar la operacion`)
+                }
+            }
+        }
+        async eventCloseOption(event) {
+            const { returnValue } = event.target
+            if (returnValue !== "") {
+                let info = JSON.parse(returnValue)
+                let response = {}
+                let dataDelete = info.filter(item => item.status == Status.Deleted && item.idOption !== null)
+                let dataInsert = info.filter(item => item.status == Status.Inserted)
+                let dataUpdate = info.filter(item => item.status == Status.Updated)
+
+                if (dataUpdate.length > 0) {
+                    dataUpdate = dataUpdate.map(item => {
+                        const { status, index, ...data } = item
+                        return data
+                    })
+                    response = await API.post('api/master/option', JSON.stringify(dataUpdate))
+                    if (!response.ok) {
+                        throw new Error(`Error ${response.status}:No se pudo Actualizar`)
+                    }
+                }
+                if (dataInsert.length > 0) {
+                    dataInsert = dataInsert.map(item => {
+                        const { status, index, ...data } = item
+                        return data
+                    })
+                    response = await API.put('api/master/option', JSON.stringify(dataInsert))
+                    if (!response.ok) {
+                        throw new Error(`Error ${response.status}: No se pudo Insertar`)
+                    }
+                }
+                if (dataDelete.length > 0) {
+                    for (let index = 0; index < dataDelete.length; index++) {
+                        await API.delete(`api/master/option/${dataDelete[index].idOption}`)
+                    }
+                }
+            }
+        }
+    }
+
+    window.customElements.define('view-master', MasterView)
+</script>

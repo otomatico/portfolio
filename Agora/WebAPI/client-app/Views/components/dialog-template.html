@@ -1,0 +1,81 @@
+<template id="dialog-template">
+  <form id="formTemplate" class="card" method="dialog">
+    <div class="card-header">
+      <button type="button" class="btn btn-close btn-outline-danger float-end" data-target="close"></button>
+      <div class="card-title"><i class="bi" style="font-size: 150%;"></i> Plantilla</div>
+    </div>
+    <div class="card-body">
+      <div class="input-group">
+        <label for="name" class="input-group-text btn-secondary">Nombre</label>
+        <input type="text" class="form-control" id="name" placeholder="Nombre del Plantilla" required />
+      </div>
+    </div>
+    <div class="card-footer text-end">
+      <button class="btn btn-success me-2" type="submit"> Guardar</button>
+      <button class="btn btn-secondary" data-target="close" type="reset"> Cancelar</button>
+    </div>
+  </form>
+</template>
+
+<script type="module">
+  export default class DialogTemplate extends HTMLDialogElement {
+    #data = null
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      const clone = document.querySelector('#dialog-template').content.cloneNode(true)
+      this.appendChild(clone)
+      this.form = this.querySelector("form#formTemplate")
+
+      const onSave = this.eventSave.bind(this)
+      this.form.addEventListener("submit", onSave)
+
+      this.form.addEventListener("click", (event) => {
+        const { tagName, dataset } = event.target
+        if (tagName == "BUTTON") {
+          if (dataset.target == 'close') {
+            this.eventCancel(event)
+          }
+        }
+      })
+    }
+
+    async openDialog(info) {
+      this.showModal()
+      const icon = this.querySelector("div.card-title i.bi")
+      if (info.idTemplate) {
+        this.#data = info
+        icon.className = "bi bi-pencil-square"
+      } else {
+        this.#data = this.#default()
+        icon.className = "bi bi-plus-circle"
+      }
+      this.querySelector("#name").value = this.#data.name
+    }
+
+    eventCancel(event) {
+      this.form.reset()
+      this.close("")
+    }
+
+    eventSave(event) {
+      this.#data.name = this.querySelector("#name").value
+      this.#data.modifyDate = (new Date()).toISOString()
+      this.form.reset()
+      const{index, ...data} = this.#data
+      this.close(JSON.stringify(data))
+    }
+
+    #default() {
+      return {
+        idTemplate: null,
+        name: "",
+        createDate: (new Date()).toISOString(),
+        modifyDate: (new Date()).toISOString()
+      }
+    }
+  }
+  window.customElements.define("dialog-template", DialogTemplate, { extends: "dialog" })
+</script>

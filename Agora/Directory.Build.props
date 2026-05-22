@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="build/Dependencies.props" />
+ 
+  <ItemGroup>
+    <SourceRoot Include="$(MSBuildThisFileDirectory)/"/>    
+  </ItemGroup>
+
+</Project>

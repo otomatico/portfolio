@@ -12,10 +12,10 @@ Este repositorio contiene múltiples proyectos. A continuación, se detalla la l
 | `/HttpServerFile`       | Servir archivos estáticos (HTML, CSS, JS, imágenes, etc.) desde un directorio local.   |
 | `/EditPixel`            | Simples Page Application para crear sprite de forma agil.                              |
 | `/SimplesWebAPITesting` | Un cliente gráfico ligero para probar APIs REST/GraphQL desde Windows.                 |
+| `/Agora`                | Aplicacion flexible de proposito general que se adapta al cualquier negocio.           |
 
 
 ---
-
 
 ## 📞 **Contacto**
 

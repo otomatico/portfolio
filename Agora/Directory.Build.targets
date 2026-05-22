@@ -1,0 +1,40 @@
+<Project>
+	<PropertyGroup>
+		<TargetFrameworkMonikerAssemblyAttributesPath>$([System.IO.Path]::Combine('$(IntermediateOutputPath)','$(TargetFrameworkMoniker).AssemblyAttributes$(DefaultLanguageSourceExtension)'))</TargetFrameworkMonikerAssemblyAttributesPath>
+	</PropertyGroup>
+	<ItemGroup>
+		<!-- https://github.com/dotnet/sourcelink/issues/572 -->
+		<EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)"/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Update="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.20" />
+		<PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="6.0.20" />
+		<PackageReference Update="Microsoft.Identity.Web" Version="2.13.4" />
+		<PackageReference Update="Microsoft.Identity.Web.UI" Version="2.13.4" />
+		<PackageReference Update="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+
+		<PackageReference Update="Microsoft.Extensions.Configuration" Version="7.0.0" />
+		<PackageReference Update="System.Linq" Version="4.3.0" />
+	</ItemGroup>
+
+	<ItemGroup Label="Librerias Externas">
+		<PackageReference Update="MySql.Data" Version="8.1.0" />
+		<PackageReference Update="System.Data.SqlClient" Version="4.8.5" />
+		<PackageReference Update="Dapper" Version="2.0.151" />
+		<PackageReference Update="Swashbuckle.AspNetCore" Version="6.5.0" />
+
+		<!--
+			<PackageReference Update="Polly" Version="7.2.3" />
+			<PackageReference Update="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
+			<PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
+			
+			<PackageReference Update="Serilog.AspNetCore" Version="5.0.0" />
+			<PackageReference Update="Serilog.Sinks.Console" Version="4.0.1" />
+			<PackageReference Update="Serilog.Sinks.File" Version="5.0.0" />
+			<PackageReference Update="Serilog.Sinks.AwsCloudWatch" Version="4.0.171" />
+			<PackageReference Update="Serilog.Formatting.Compact" Version="1.1.0"/>
+			<PackageReference Update="Serilog.Extensions.Logging" Version="3.1.0" />
+		-->
+	</ItemGroup>
+</Project>

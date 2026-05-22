@@ -1,0 +1,157 @@
+<template id="dialog-root">
+  <style>
+    form#formNodeRoot label.input-group-text {
+      min-width: 150px;
+      text-align: right;
+      display: inline-block;
+    }
+  </style>
+  <form id="formNodeRoot" class="card" method="dialog">
+    <div class="card-header">
+      <button type="button" class="btn btn-close btn-outline-danger float-end" data-target="close"></button>
+      <div class="card-title"><i class="bi bi-pencil-square" style="font-size: 150%;"></i>Nodo</div>
+    </div>
+    <div class="card-body">
+      <div class="input-group">
+        <label for="name" class="input-group-text">Nombre</label>
+        <input type="text" class="form-control" id="name" value="" placeholder="Nombre del Nodo" />
+        <select class="form-select" id="idTemplate">
+          <option value="" selected>Selecione una Plantilla</option>
+        </select>
+      </div>
+      <div class="mt-3 overflow-y-auto" style="min-height: 180px;">
+        <json-values editable="true"></json-values>
+      </div>
+    </div>
+    <div class="card-footer text-end">
+      <button class="btn btn-success me-2" id="save" type="submit"> Guardar</button>
+      <button class="btn btn-secondary" data-target="close" id="cancel" type="reset"> Cancelar</button>
+    </div>
+  </form>
+</template>
+<script type="module">
+  import * as Enum from './Enum.js';
+  import API from './utils/API.js';
+  export default class DialogNodeRoot extends HTMLDialogElement {
+    #info = {}
+    #default = () => ({
+      "idNode": null,
+      "name": "",
+      "idTemplate": null,
+      "jsonValue": '{}',
+      "modifyDate": (new Date()).toISOString()
+    });
+    #fields = []
+    constructor() {
+      super();
+    }
+
+    async connectedCallback() {
+      const clone = document.querySelector('#dialog-root').content.cloneNode(true);
+      this.appendChild(clone);
+
+      const onCancel = this.eventCancel.bind(this);
+      const onSave = this.eventSave.bind(this);
+      const onChangeTemplate = this.eventChangeTemplate.bind(this);
+
+      this.querySelectorAll('[data-target="close"]').forEach(btn =>
+        btn.addEventListener("click", onCancel)
+      );
+      this.querySelector("FORM#formNodeRoot").addEventListener("submit", onSave);
+      this.querySelector("#idTemplate").addEventListener("change", onChangeTemplate);
+      this.jsonValues = this.querySelector("json-values");
+    }
+    async openDialog(info) {
+      this.jsonValues.setAttribute("schema", "[]");
+      this.#loadTemplates();
+      const selectIdTemplate = this.querySelector('select#idTemplate');
+      if (info?.idNode) {
+        this.#info = { ...info };
+        await this.#loadField(info.idTemplate);
+        this.#info.jsonValue = JSON.parse(info.jsonValue);
+        this.querySelector(`#name`).value = info.name;
+        selectIdTemplate.value = info.idTemplate;
+        selectIdTemplate.setAttribute("disabled", true);
+        this.jsonValues.item = this.#info.jsonValue;
+      } else {
+        selectIdTemplate.removeAttribute("disabled");
+        this.#info = info || this.#default();
+        this.jsonValues.reset();
+      }
+      this.showModal();
+    }
+
+    eventSave(event) {
+      event.preventDefault();
+      const jsonValues = this.jsonValues;
+      const info = this.#info
+      info.jsonValue = {}
+      this.#fields.forEach(field => {
+        const input = jsonValues.querySelector(`#${field.attributeName}`);
+        let value = input.value || input.checked
+        info.jsonValue[field.attributeName] = value;
+      })
+      info.jsonValue = JSON.stringify(info.jsonValue);
+      info.idTemplate = this.querySelector(`#idTemplate`).value;
+      info.name = this.querySelector(`#name`).value;
+
+      this.querySelector('form').reset();
+      this.jsonValues.reset();
+      this.close(JSON.stringify(info));
+    }
+    eventCancel(event) {
+      this.querySelector('form').reset()
+      this.jsonValues.reset();
+      this.close("");
+    }
+
+    eventChangeTemplate(event) {
+      const idTemplate = event.target.value;
+      this.#loadField(idTemplate);
+    }
+
+    async #loadField(idTemplate) {
+      if (idTemplate) {
+        let response = await API.get(`api/template/field/${idTemplate}`)
+        if (response.ok) {
+          const schema = await response.text();
+          this.jsonValues.setAttribute("schema", schema);
+          this.#fields = JSON.parse(schema);
+        }
+      }
+    }
+    async #getTemplateAllowed() {
+      let templates = []
+      let response = await API.get("api/template");
+      if (response.ok) {
+        templates = await response.json();
+        if (this.#info.idNodeParent) {
+          response = await API.get(`api/template/children/node/${this.#info.idNodeParent}`);
+          let templateAllowed = await response.json();
+          templates = templates.map((child) => {
+            if (templateAllowed.some(f => f.maxAllowed > 0 && f.idTemplate == child.idTemplate)) {
+              return child;
+            }
+            return null;
+          }).filter(f => f !== null);
+        }
+      }
+      return templates;
+    }
+    async #loadTemplates(value = null) {
+      let templates = await this.#getTemplateAllowed();
+      const cbTemplate = this.querySelector("#idTemplate");
+      cbTemplate.querySelectorAll("[value]").forEach(item => item.value != '' && cbTemplate.removeChild(item));
+      templates.forEach(item => {
+        let optionItem = document.createElement("OPTION")
+        optionItem.value = item.idTemplate
+        optionItem.textContent = item.name
+        if (value && value === item.idTemplate) {
+          optionItem.selected = true;
+        }
+        cbTemplate.appendChild(optionItem);
+      })
+    }
+  }
+  window.customElements.define("dialog-node-root", DialogNodeRoot, { extends: "dialog" });
+</script>

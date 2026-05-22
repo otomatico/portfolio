@@ -1,0 +1,161 @@
+<template id="input">
+    <div class="form-check form-switch mt-1" slot="inputBooleano">
+        <input class="form-check-input" type="checkbox" role="switch" id="${attributeName}">
+        <label class="form-check-label" for="${attributeName}">${name}</label>
+    </div>
+    <div class="inputBox mt-3 btn-outline-secondary" slot="inputNumero">
+        <label for="${attributeName}" class="input-group-text">${name}</label>
+        <input type="number" class="form-control" id="${attributeName}" placeholder="${name}" value="${defaultValue}" />
+    </div>
+    <div class="inputBox mt-3 btn-outline-secondary" slot="inputTexto">
+        <input type="text" id="${attributeName}" value="${defaultValue}" pattern=".+" />
+        <label for="${attributeName}">${name}</label>
+    </div>
+    <div class="inputBox mt-3 btn-outline-secondary" slot="inputSeleccion">
+        <select id="${attributeName}" data-value="${defaultValue}" data-master="${idMaster}">
+            <option value="">Selecione un ${name}</option>
+        </select>
+        <label for="${attributeName}">${name}</label>
+    </div>
+    <div class="inputBox mt-3 btn-outline-secondary" slot="inputSeleccionMultiple">
+        <select id="${attributeName}" data-value="${defaultValue}" data-master="${idMaster}">
+            <option value="">Selecione un ${name}</option>
+        </select>
+        <label for="${attributeName}">${name}</label>
+    </div>
+    <div class="input-group mt-1" slot="inputRecurso">
+        <label for="${attributeName}" class="input-group-text btn-secondary">${name}</label>
+        <input type="file" class="form-control" id="${attributeName}" placeholder="${name}" value="${defaultValue}" />
+    </div>
+</template>
+<script type="module">
+    import API from './utils/API.js';
+    import * as Enum from './Enum.js'
+
+    class JsonValues extends HTMLElement {
+        #item = {}
+        #schema = []
+        #editable = true;
+        constructor() {
+            super();
+            this.template = document.querySelector('template#input')?.content;
+            this.#editable = this.getAttribute("editable")?.toLowerCase() !== 'false';
+        }
+        static get observedAttributes() {
+            return ['item', 'schema', 'editable'];
+        }
+        set item(value) {
+            this.#item = value;
+            this.reset();
+            this.renderSchema().then(() => {
+                this.#schema.forEach(field => {
+                    const input = this.querySelector(`#${field.attributeName}`);
+
+                    if (field.idType == Enum.typeFieldEnum.Boleano) {
+                        input.checked = this.#item[field.attributeName] ?? field.defaultValue;
+                    } else {
+                        input.value = this.#item[field.attributeName] ?? field.defaultValue;
+                    }
+                });
+            });
+        }
+        set schema(value) {
+            this.#schema = value;
+            this.renderSchema();
+        }
+        async attributeChangedCallback(name, oldValue, newValue) {
+            if (name == 'item') {
+                this.item = JSON.parse(newValue);
+            }
+            if (name == 'schema') {
+                this.schema = JSON.parse(newValue);
+            }
+
+            if (name == 'editable') {
+                this.#schema.forEach(field => {
+                    const input = this.querySelector(`#${field.attributeName}`);
+                    if (this.#editable == 'false' || this.#editable == false) {
+                        input.disabled = true;
+                        input.classList.add("disabled");
+                    }
+                });
+            }
+
+        }
+        connectedCallback() {
+            this.renderSchema()
+        }
+        async renderSchema() {
+            const aside = document.createElement('ASIDE');
+            this.appendChild(aside);
+            if (this.#schema?.length == 0) {
+                //aside.textContent = "No hay datos";
+                //aside.style.textAlign = "center";
+            } else {
+                this.#schema.forEach(field => {
+                    const input = this.#createInputBoxes(field);
+                    if (input) {
+                        aside.appendChild(input);
+                        if (this.#editable == 'false' || this.#editable == false) {
+                            input.disabled = true;
+                            input.classList.add("disabled");
+                        }
+                        if (field.required) {
+                            input.required = true;
+                        }
+                        if (this.#editable == 'false' || this.#editable == false) {
+                            input.disabled = true;
+                            input.classList.add("disabled");
+                        }
+                    }
+                })
+            }
+            const LoadDOMOptionElement = async (select) => {
+                const idMaster = select.dataset.master;
+                let response = await API.get(`api/master/option/${idMaster}`)
+                if (response.ok) {
+                    let list = await response.json();
+                    this.#loadComboBox(list, select, select.dataset.value);
+                }
+            }
+
+            let selects = aside.querySelectorAll("select[data-master]")
+            for (let index = 0; index < selects.length; index++) {
+                await LoadDOMOptionElement(selects[index]);
+            }
+
+        }
+        reset() {
+            this.querySelectorAll(`aside`).forEach(inner => {
+                this.removeChild(inner);
+            });
+        }
+        #createInputBoxes(field) {
+            let input = null;
+            const tag = Enum.typeField.filter(item => item.idType == field.idType)[0]?.field
+            if (tag) {
+
+                const template = this.template.cloneNode(true);
+                input = template.querySelector(`[slot=input${tag.trim()}]`);
+                const entriesField = Object.entries(field);
+                entriesField.forEach(([property, value]) => {
+                    input.innerHTML = input.innerHTML.replaceAll('${' + property + '}', value)
+                });
+            }
+            return input;
+        }
+        #loadComboBox(masters, cbMaster, value) {
+            cbMaster.querySelectorAll("[value]").forEach(item => item.value != '' && cbMaster.removeChild(item));
+            masters.forEach(item => {
+                let optionItem = document.createElement("OPTION")
+                optionItem.value = item.value
+                optionItem.textContent = item.name
+                if (value && value === item.value) {
+                    optionItem.selected = true;
+                }
+                cbMaster.appendChild(optionItem);
+            })
+        }
+    }
+    window.customElements.define("json-values", JsonValues);
+</script>

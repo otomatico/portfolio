@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup Label="SDK Versions">
+    <NetCoreTargetVersion>net6.0</NetCoreTargetVersion>
+    <LangVersion>latestMajor</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package Dependencies">
+    <AspNetCoreVersion>6.0.0</AspNetCoreVersion>
+    <MicrosoftVisualStudioServices>16.170.0</MicrosoftVisualStudioServices>
+  </PropertyGroup>
+
+</Project>

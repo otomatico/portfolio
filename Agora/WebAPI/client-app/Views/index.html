@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+  <title>Ágora</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="es">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" type="image/png" href="../assets/img/agora.png" />
+  <link rel="stylesheet" href="assets/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+  <div class="container-fluid">
+    <nav class="navbar row justify-content-between menuToolTip bg-primary">
+      <div class="col">
+        <a href="#" data-bs-toggle="collapse" data-bs-target="#mainMenuCollapse">
+          <span class="bi bi-list text-white">
+          </span></a>
+      </div>
+
+      <div class="col" style="text-align: end;">
+        <button type="button" class="btn btn-link text-warning" title="log out"><span
+            class="bi bi-door-open"></span></button>
+        <button type="button" class="btn btn-link text-white" title="profile"><span
+            class="bi bi-person-circle"></span></button>
+      </div>
+    </nav>
+    <main id="mainPanel">
+      <section class="row" style="align-items: stretch;">
+        <div class="col-3 collapse bg-secondary p-1 show" id="mainMenuCollapse" data-bs-parent="#mainPanel">
+          <ui-menu></ui-menu>
+        </div>
+        <div class="col p-2" id="mainDraw"></div>
+      </section>
+    </main>
+  </div>
+  <script type="text/javascript" src="assets/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="app.js" ></script>
+</body>
+</html>

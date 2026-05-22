@@ -1,0 +1,68 @@
+<template id="node-edit">
+    <div class="card-body h-100" id="viewNode">
+        <figure>
+            <blockquote class="blockquote input-group">
+                <span for="name" class="input-group-text">Nombre</span>
+                <span class="form-control" id="name"></span>
+            </blockquote>
+            <figcaption class="text-end blockquote-footer" id="nameTemplate"></figcaption>
+        </figure>
+        <hr />
+        <json-values id="dataJson" class="overflow-y-auto" editable="false"></json-values>
+    </div>
+</template>
+
+<script type="module">
+    import API from './utils/API.js';
+    export default class NodeEdit extends HTMLDivElement {
+        #html = null
+        #item = {}
+        constructor() {
+            super();
+        }
+        async connectedCallback() {
+            this.#html = document.querySelector("TEMPLATE#node-edit").content || null;
+            this.appendChild(this.#html.cloneNode(true))
+        }
+
+        static get observedAttributes() {
+            return ['item'];
+        }
+        async attributeChangedCallback(name, oldValue, newValue) {
+            if (name == 'item') {
+                this.item = JSON.parse(newValue)
+            } else {
+                this[`#${name}`] = newValue;
+            }
+        }
+
+        set item(value) {
+            this.#item = value;
+            this.innerHTML = '';
+            this.appendChild(this.#html.cloneNode(true))
+            this.json = this.querySelector("#dataJson")
+            this.#loadJSONValue(value)
+        }
+
+        #loadJSONValue(root) {
+            if (root) {
+                this.querySelector('#name').textContent = root.name
+                this.querySelector('#nameTemplate').textContent = root.nameTemplate
+                this.#loadField(root.idTemplate).then(data => {
+                    this.json.setAttribute('schema', data);
+                    this.json.item = JSON.parse(root.jsonValue);
+                });
+            }
+        }
+
+        async #loadField(idTemplate) {
+            if (idTemplate) {
+                let response = await API.get(`api/template/field/${idTemplate}`)
+                if (response.ok) {
+                    return response.text()
+                }
+            }
+        }
+    }
+    window.customElements.define("node-edit", NodeEdit, { extends: 'div' });
+</script>

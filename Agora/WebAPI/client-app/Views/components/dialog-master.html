@@ -1,0 +1,74 @@
+<template id="dialog-master">
+  <form id="formMaster" class="card" method="dialog">
+    <header class="card-header">
+      <button type="button" class="btn btn-close btn-outline-danger float-end" data-target="close"></button>
+      <h3 class="card-title"><i class="bi" style="font-size: 150%;"></i> Maestro</h3>
+    </header>
+    <main class="card-body">
+      <div class="input-group">
+        <label for="name" class="input-group-text btn-secondary">Nombre</label>
+        <input type="text" class="form-control" id="name" placeholder="Nombre del Maestro" />
+      </div>
+    </main>
+    <footer class="card-footer text-end">
+      <button class="btn btn-success me-2" id="save" type="submit"> Guardar</button>
+      <button class="btn btn-secondary" data-target="close" id="cancel" type="reset"> Cancelar</button>
+    </footer>
+  </form>
+</template>
+<script type="module">
+
+  export default class DialogMaster extends HTMLDialogElement {
+    #data = {}
+    constructor() {
+      super()
+    }
+
+    async connectedCallback() {
+      const clone = document.querySelector('#dialog-master').content.cloneNode(true);
+      this.appendChild(clone)
+      const onCancel = this.eventCancel.bind(this);
+      const onSave = this.eventSave.bind(this);
+
+      this.querySelectorAll('[data-target="close"]').forEach(btn => {
+        btn.addEventListener("click", onCancel);
+      });
+      this.querySelector("#save").addEventListener("click", onSave);
+    }
+
+    async openDialog(info) {
+      this.showModal();
+
+      const icon = this.querySelector("div.card-title i.bi")
+      if (info) {
+        this.#data = info;
+        icon.classList.remove("bi-plus-circle");
+        icon.classList.add("bi-pencil-square");
+      } else {
+        this.#data = this.#defaultMaster();
+        icon.classList.remove("bi-pencil-square");
+        icon.classList.add("bi-plus-circle");
+      }
+      this.querySelector("#name").value = this.#data.name
+    }
+
+    eventCancel(event) {
+      this.close("");
+    }
+
+    eventSave(event) {
+      this.#data.name = this.querySelector("#name").value
+      this.#data.modifyDate = (new Date()).toISOString()
+      this.close(JSON.stringify(this.#data));
+    }
+
+    #defaultMaster() {
+      return {
+        idMaster: null,
+        name: "",
+      }
+    }
+
+  }
+  window.customElements.define("dialog-master", DialogMaster, { extends: "dialog" });
+</script>
