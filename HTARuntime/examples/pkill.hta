@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puertos Abiertos</title>
+<HTA:APPLICATION
+    APPLICATIONNAME="Puertos Abiertos HTA"
+    BORDER="thick"
+    CAPTION="yes"
+    SHOWINTASKBAR="yes"
+    SINGLEINSTANCE="no"
+    WINDOWSTATE="normal"
+>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; background-color: #f4f7f6;overflow:hidden }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; }
+        .card { background: white; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .info { color: #7f8c8d; font-size: 0.9rem; }
+        button#load-data { padding: 0.6rem 1.2rem; margin-bottom: 2rem; cursor: pointer; background-color: #007bff; border: none; border-radius: 4px; color: #fff; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        tr:hover { background-color: #f1f1f1; }
+        .btn-action { padding: 0.4rem 0.8rem; background-color: #a73128; border: none; border-radius: 4px; color: #fff; cursor: pointer; }
+        #status { margin-top: 10px; color: #c039b5; font-weight: bold; }
+        #table-container { background: #ecf0f1; padding: 1rem; border-radius: 4px; margin-top: 1rem; min-height: 3rem;}
+        /*#ports-table { width: 100%;}*/
+        #ports-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#ports-table thead,
+#ports-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+#ports-table tbody {
+    display: block;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+    </style>
+</head>
+<body>
+    <h1>Puertos Abiertos en el Sistema</h1>
+    <p class="info">Carga todo los puertos en uso de la maquina y habilita su liberacion</p>
+    <div class="card" style="overflow:hidden">
+        <h3>&#x1F4BB; Listado de puertos</h3>
+        <button id="load-data">Cargar Puertos</button>
+        <div id="status"></div>
+        <div id="table-container">
+            <table id="ports-table">
+                <thead>
+                    <tr>
+                        <th>Dirección Local </th>
+                        <th> Puerto </th>
+                        <th> PID </th>
+                        <th> Proceso </th>
+                        <th> Acción </th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        const TABLE_BODY = document.getElementById('table-body');
+        const LOAD_BUTTON = document.getElementById('load-data');
+        const STATUS_TEXT = document.getElementById('status');
+
+        const fetchPorts = async () => {
+            STATUS_TEXT.textContent = 'Cargando...';
+            try {
+                const shell = new ActiveXObject("WScript.Shell");
+                const psCommand = `powershell -NoProfile -Command \"Get-NetTCPConnection -State Listen | Select-Object LocalAddress, LocalPort, OwningProcess, @{Name='Proceso';Expression={(Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).ProcessName}} | ConvertTo-Json -Compress\"`
+                const output = shell.Exec(psCommand);
+                jsonString = output.StdOut.ReadAll().replace(/\r\n/g, "");
+                parsePorts(jsonString);
+                STATUS_TEXT.textContent = '';
+            } catch (err) {
+                STATUS_TEXT.textContent = 'Error: ' + err;
+            }
+        };
+
+        const parsePorts = (jsonText) => {
+            TABLE_BODY.innerHTML = '';
+            const ports = JSON.parse(jsonText);
+            const arr = Array.isArray(ports) ? ports : [ports];
+
+            for (const p of arr) {
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + (p.LocalAddress || '') + '</td>' +
+                    '<td>' + (p.LocalPort || '') + '</td>' +
+                    '<td>' + (p.OwningProcess || '') + '</td>' +
+                    '<td>' + (p.Proceso || '') + '</td>' +
+                    '<td><button class="btn-action" onclick="handleAction(' + p.OwningProcess + ')" title="Liberar">&#128275;</button></td>';
+                TABLE_BODY.appendChild(tr);
+            }
+        };
+
+        const handleAction = async (pid) => {
+            STATUS_TEXT.textContent = 'Matando PID ' + pid + '...';
+            try {
+                await System.exec('taskkill /PID ' + pid + ' /F');
+                STATUS_TEXT.textContent = 'PID ' + pid + ' terminado';
+                await fetchPorts();
+            } catch (err) {
+                STATUS_TEXT.textContent = 'Error al matar PID ' + pid + ': ' + err;
+            }
+        };
+
+        LOAD_BUTTON.addEventListener('click', fetchPorts);
+    </script>
+
+</body>
+</html>

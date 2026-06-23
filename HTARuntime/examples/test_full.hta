@@ -1,0 +1,126 @@
+<html>
+<head>
+<title>Test Full HTA</title>
+<HTA:APPLICATION
+    APPLICATIONNAME="Prueba Completa HTA"
+    BORDER="thick"
+    CAPTION="yes"
+    SHOWINTASKBAR="yes"
+    SINGLEINSTANCE="no"
+    WINDOWSTATE="normal"
+>
+<style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; color: #222; }
+    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    button { background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin: 0.25rem; }
+    button:hover { background: #2980b9; }
+    button.danger { background: #e74c3c; }
+    button.danger:hover { background: #c0392b; }
+    #output { background: #ecf0f1; padding: 1rem; border-radius: 4px; margin-top: 1rem; white-space: pre-wrap; font-family: monospace; min-height: 3rem; }
+    .info { color: #7f8c8d; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<h1>HTA Runtime — Prueba Completa</h1>
+<p class="info">Aplicación: <span id="app-name">Prueba Completa HTA</span> | Ventana: normal, caption visible</p>
+
+<div class="card">
+    <h3>&#x1F4C4; Sistema de Archivos</h3>
+    <p>Selecciona un archivo para leer:</p>
+    <button onclick="leerReadme()">Leer Readme.md</button>
+    <button onclick="leerInexistente()">Leer archivo inexistente</button>
+</div>
+
+<div class="card">
+    <h3>&#x1F4A1; Información</h3>
+    <button onclick="mostrarInfo()">Mostrar info del sistema</button>
+    <button onclick="mostrarConfig()">Mostrar configuración parseada</button>
+</div>
+
+<div class="card">
+    <h3>&#x1F4BB; Ejecutar comandos</h3>
+    <button onclick="ejecutarDir()">Ejecutar `dir src\`</button>
+    <button onclick="ejecutarIpconfig()">Ejecutar `ipconfig /all`</button>
+    <button onclick="ejecutarError()">Ejecutar comando inválido</button>
+</div>
+
+<div id="output">Esperando interacción...</div>
+
+<script>
+    async function leerReadme() {
+        const output = document.getElementById("output");
+        output.textContent = "Leyendo Readme.md...";
+        try {
+            const contenido = await System.fs.readFile(
+                "C:\\Users\\Otomatico\\hta-runtime\\Readme.md"
+            );
+            output.textContent = contenido.content;
+        } catch (e) {
+            output.textContent = "ERROR: " + e;
+        }
+    }
+
+    async function leerInexistente() {
+        const output = document.getElementById("output");
+        try {
+            await System.fs.readFile("C:\\archivo_que_no_existe.txt");
+        } catch (e) {
+            output.textContent = "ERROR controlado (esperado): " + e;
+        }
+    }
+
+    function mostrarInfo() {
+        document.getElementById("output").textContent =
+            "Plataforma: " + navigator.platform + "\n" +
+            "User Agent: " + navigator.userAgent + "\n" +
+            "WebView: WebView2 (Edge Chromium)";
+    }
+
+    function mostrarConfig() {
+        document.getElementById("output").textContent =
+            "Configuración parseada desde <HTA:APPLICATION>:\n\n" +
+            "APPLICATIONNAME: Prueba Completa HTA\n" +
+            "BORDER: thick\n" +
+            "CAPTION: yes\n" +
+            "SHOWINTASKBAR: yes\n" +
+            "SINGLEINSTANCE: no\n" +
+            "WINDOWSTATE: normal";
+    }
+
+    async function ejecutarDir() {
+        const output = document.getElementById("output");
+        output.textContent = "Ejecutando dir src\\...";
+        try {
+            const resultado = await System.exec("dir src\\");
+            output.textContent = resultado.output;
+        } catch (e) {
+            output.textContent = "ERROR: " + e;
+        }
+    }
+
+    async function ejecutarIpconfig() {
+        const output = document.getElementById("output");
+        output.textContent = "Ejecutando ipconfig /all...";
+        try {
+            const resultado = await System.exec("ipconfig /all");
+            output.textContent = resultado.output;
+        } catch (e) {
+            output.textContent = "ERROR: " + e;
+        }
+    }
+
+    async function ejecutarError() {
+        const output = document.getElementById("output");
+        try {
+            await System.exec("comando_inexistente_xyz");
+            output.textContent = "Esto no debería ejecutarse";
+        } catch (e) {
+            output.textContent = "ERROR controlado (esperado): " + e;
+        }
+    }
+</script>
+
+</body>
+</html>

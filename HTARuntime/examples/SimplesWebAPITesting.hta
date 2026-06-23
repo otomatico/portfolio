@@ -1,0 +1,542 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=9">
+    <title>REST API Client</title>
+    <hta:application
+        id="oAppRestApi"
+        applicationname="SimplesWebAPITesting"
+        border="thin"
+        scroll="auto"
+        singleinstance="yes"
+        width="750"
+        height="850"
+        icon="icon.ico"
+    />
+        <style>
+            /* RESET & BASE */
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, sans-serif;
+                background: #e0e0e0;
+                overflow-x: hidden;
+                font-size: 0.9em
+            }
+
+            /* BARRA DE MENÚ SUPERIOR */
+            .menu-bar {
+                background: #f0f0f0;
+                font-size: 1em;
+                border-bottom: 1px solid #ababab;
+                padding: 2px 10px;
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 1000;
+            }
+
+            .menu-item {
+                display: inline-block;
+                padding: 4px 12px;
+                color: #333;
+                cursor: pointer;
+                position: relative;
+            }
+
+            .menu-item:hover {
+                background: #d1d1d1;
+            }
+
+            .menu-item span {
+                font-weight: bold;
+            }
+
+            /* Estilo para el contenedor del menú */
+            .menu-group {
+                display: inline-block;
+                position: relative;
+            }
+
+            /* El botón principal "Archivo" */
+            .menu-button {
+                padding: 6px 15px;
+                cursor: pointer;
+                background: #f0f0f0;
+                border: none;
+                /*font-size: 1.2em;*/
+                /*font-weight: bold;*/
+            }
+
+            .menu-button:hover {
+                background: #d1d1d1;
+            }
+
+            /* El desplegable oculto por defecto */
+            .dropdown-content {
+                display: none;
+                position: absolute;
+                background-color: #f9f9f9;
+                min-width: 160px;
+                box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+                border: 1px solid #ccc;
+                z-index: 1001;
+            }
+
+            /* Elementos dentro del desplegable */
+            .dropdown-content div {
+                color: black;
+                padding: 8px 12px;
+                text-decoration: none;
+                display: block;
+                cursor: pointer;
+            }
+
+            .dropdown-content div:hover {
+                background-color: #e0e0e0;
+            }
+
+            /* Clase para mostrar el menú */
+            .show {
+                display: block;
+            }
+
+            /* CONTENEDOR PRINCIPAL */
+            .main-wrapper {
+                padding: 50px 20px 20px 20px;
+            }
+
+            /* Margen superior para el menú */
+            .container {
+                background: white;
+                padding: 15px;
+                border-radius: 4px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            }
+
+            label {
+                font-weight: bold;
+                display: block;
+                margin-top: 12px;
+                font-size: 0.9em;
+                color: #444;
+            }
+
+            input,
+            textarea,
+            select {
+                width: 100%;
+                padding: 6px;
+                border: 1px solid #ccc;
+                border-radius: 2px;
+                box-sizing: border-box;
+            }
+
+            textarea {
+                height: 120px;
+                font-family: 'Consolas', monospace;
+                resize: none;
+                margin-top: 5px;
+            }
+
+            .placeholder-style {
+                color: #aaa !important;
+            }
+
+            /* TABLAS DE LAYOUT (IE9 COMPATIBLE) */
+            .row-table {
+                display: table;
+                width: 100%;
+                border-spacing: 5px 0;
+                margin-bottom: 5px;
+            }
+
+            .cell {
+                display: table-cell;
+                vertical-align: bottom;
+            }
+
+            #headers-container {
+                margin-top: 5px;
+                border: 1px solid #eee;
+                padding: 8px;
+                background: #fafafa;
+            }
+
+            .header-row {
+                display: table;
+                width: 100%;
+                border-spacing: 5px;
+                margin-bottom: 2px;
+            }
+
+            /* BOTONES */
+            .btn {
+                padding: 6px 12px;
+                background-color: #666;
+                color: white;
+                border: 1px solid #555;
+                border-radius: 2px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 0.85em;
+            }
+
+            .btn:hover {
+                background-color: #888;
+            }
+
+            .btn-execute {
+                background-color: #0078d4;
+                border-color: #005a9e;
+                width: 100%;
+                height: 35px;
+            }
+
+            .btn-execute:hover {
+                background-color: #005a9e;
+            }
+
+            .btn-add {
+                background-color: #28a745;
+                margin-top: 5px;
+            }
+
+            .btn-del {
+                background-color: #dc3545;
+                width: 40px;
+                text-align: center
+            }
+
+            #output {
+                margin-top: 15px;
+                font-size: 0.85em;
+                white-space: pre-wrap;
+                font-family: 'Consolas', monospace;
+                background: #1e1e1e;
+                color: #dcdcdc;
+                padding: 15px;
+                border-radius: 2px;
+                height: 250px;
+                overflow-y: auto;
+                border: 1px solid #000;
+            }
+        </style>
+
+        <script language="jscript">
+            function toggleMenu() {
+                var menu = document.getElementById("fileMenu");
+                if (menu.className.indexOf("show") == -1) {
+                    menu.className += " show";
+                } else {
+                    menu.className = menu.className.replace(" show", "");
+                }
+            }
+
+            // Cerrar el menú si se hace clic fuera de él
+            document.onclick = function (event) {
+                if (!event.target.className.match('menu-button')) {
+                    var menu = document.getElementById("fileMenu");
+                    menu.className = menu.className.replace(" show", "");
+                }
+            }
+            // --- AUTO-PLACEHOLDER ---
+            function applyPlaceholders() {
+                var elementos = document.querySelectorAll("[placeholder]");
+                for (var i = 0; i < elementos.length; i++) { setupElements(elementos[i]); }
+            }
+
+            function setupElements(el) {
+                var p = el.getAttribute("placeholder");
+                if (p && el.value === "") {
+                    el.value = p;
+                    el.className += " placeholder-style";
+                }
+                el.onfocus = function () {
+                    if (this.value === this.getAttribute("placeholder")) {
+                        this.value = "";
+                        this.className = this.className.replace(/\s?placeholder-style/g, "");
+                    }
+                };
+                el.onblur = function () {
+                    if (this.value === "") {
+                        this.value = this.getAttribute("placeholder");
+                        if (this.className.indexOf("placeholder-style") === -1) this.className += " placeholder-style";
+                    }
+                };
+            }
+            // --- SAVE & LOAD Config ---
+            // Función auxiliar para abrir el diálogo de archivos (Abrir o Guardar)
+            function SelectFile(mode) {
+                try {
+                    debugger
+                    var shell = new ActiveXObject("WScript.Shell");
+                    // Script de PowerShell para abrir el diálogo nativo
+                    var title = (mode === "save") ? "Guardar Configuración JSON" : "Abrir Configuración JSON";
+                    var psCommand = "powershell -NoProfile -Command \"Add-Type -AssemblyName System.Windows.Forms; " +
+                        "$f = New-Object System.Windows.Forms." + (mode === "save" ? "SaveFileDialog" : "OpenFileDialog") + "; " +
+                        "$f.Filter = 'JSON Files (*.json)|*.json|All Files (*.*)|*.*'; " +
+                        "$f.InitialDirectory = '" + shell.CurrentDirectory.replace(/\\/g, "\\\\") + "'; " +
+                        "$f.Title = '" + title + "'; " +
+                        "if($f.ShowDialog() -eq 'OK'){ $f.FileName }\"";
+
+                    var exec = shell.Exec(psCommand);
+                    var path = exec.StdOut.ReadAll().replace(/\r\n/g, "");
+                    return path;
+                } catch (e) {
+                    return "";
+                }
+            }
+
+            function SaveConfig() {
+                var filePath = SelectFile("save"); // Usa tu función SelectFile modificada
+                if (!filePath) return; // Usuario canceló
+
+                try {
+                    // Obtener los valores del formulario
+                    var getVal = function (id) {
+                        var el = typeof(id)=="string"? document.getElementById(id):id;
+                        var p = el.getAttribute("placeholder");
+                        return (el.value === p) ? "" : el.value;
+                    };
+
+                    var config = {
+                        url: getVal("url"),
+                        method: getVal("method"),
+                        body: getVal("body"),
+                        headers: []
+                    };
+
+                    // Recoger los headers
+                    var keys = document.getElementsByClassName("h-key");
+                    var vals = document.getElementsByClassName("h-val");
+                    for (var i = 0; i < keys.length; i++) {
+                        config.headers.push({
+                            key: getVal(keys[i]),
+                            val: getVal(vals[i])
+                        });
+                    }
+
+                    // Convertir el objeto a JSON (manual, ya que JScript no tiene JSON.stringify nativo)
+                    var jsonStr = "{";
+                    jsonStr += '"url":' + JSONStringify(config.url) + ",";
+                    jsonStr += '"method":' + JSONStringify(config.method) + ",";
+                    jsonStr += '"body":' + JSONStringify(config.body) + ",";
+                    jsonStr += '"headers":[';
+
+                    for (var i = 0; i < config.headers.length; i++) {
+                        if (i > 0) jsonStr += ",";
+                        jsonStr += "{";
+                        jsonStr += '"key":' + JSONStringify(config.headers[i].key) + ",";
+                        jsonStr += '"val":' + JSONStringify(config.headers[i].val);
+                        jsonStr += "}";
+                    }
+                    jsonStr += "]";
+                    jsonStr += "}";
+
+                    // Guardar el archivo usando FileSystemObject
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                    var file = fso.CreateTextFile(filePath, true); // true = sobrescribir si existe
+                    file.Write(jsonStr);
+                    file.Close();
+
+                    alert("Archivo guardado con éxito.");
+                } catch (e) {
+                    alert("Error al guardar el archivo: " + e.message);
+                }
+            }
+
+            // Función auxiliar para escapar strings a JSON
+            function JSONStringify(value) {
+                if (value === undefined || value === null) {
+                    return "null";
+                } else if (typeof value === "string") {
+                    // Escapar comillas y caracteres especiales
+                    return '"' + value.replace(/\\/g, "\\\\")
+                        .replace(/"/g, '\\"')
+                        .replace(/\n/g, "\\n")
+                        .replace(/\r/g, "\\r")
+                        .replace(/\t/g, "\\t") + '"';
+                } else if (typeof value === "number" || typeof value === "boolean") {
+                    return String(value);
+                } else {
+                    return '"' + String(value) + '"';
+                }
+            }
+
+            function LoadConfig() {
+                var filePath = SelectFile("open"); // Usa tu función SelectFile modificada
+                if (!filePath) return; // Usuario canceló
+
+                try {
+                    // Crear objeto FileSystemObject para leer el archivo
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                    var file = fso.OpenTextFile(filePath, 1); // 1 = modo lectura
+                    var jsonStr = file.ReadAll();
+                    file.Close();
+
+                    // Parsear el JSON (eval es seguro aquí si el archivo es de confianza)
+                    var data = eval("(" + jsonStr + ")");
+
+                    // Cargar los datos en el formulario
+                    document.getElementById("url").value = data.url;
+                    document.getElementById("method").value = data.method;
+                    document.getElementById("body").value = data.body;
+
+                    // Limpiar y recargar los headers
+                    document.getElementById("headers-container").innerHTML = "";
+                    for (var i = 0; i < data.headers.length; i++) {
+                        addHeaderRow(data.headers[i].key, data.headers[i].val);
+                    }
+
+                    // Reaplicar placeholders
+                    applyPlaceholders();
+                } catch (e) {
+                    alert("Error al cargar el archivo JSON: " + e.message);
+                }
+            }
+
+            // --- GESTIÓN DE CABECERAS ---
+            function addHeaderRow(key, value) {
+                var container = document.getElementById("headers-container");
+                var div = document.createElement("div");
+                div.className = "header-row";
+                div.innerHTML =
+                    '<div class="cell"><input type="text" class="h-key" placeholder="Key" value="' + (key || "") + '"></div>' +
+                    '<div class="cell"><input type="text" class="h-val" placeholder="Value" value="' + (value || "") + '"></div>' +
+                    '<div class="cell" style="width:35px"><button class="btn btn-del" onclick="removeHeader(this)">x</button></div>';
+                container.appendChild(div);
+                // Re-aplicar lógica placeholder a los nuevos inputs
+                var newInputs = div.getElementsByTagName("input");
+                for (var i = 0; i < newInputs.length; i++) setupElements(newInputs[i]);
+            }
+
+            function removeHeader(btn) {
+                var row = btn.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            }
+
+            window.onload = function () {
+                // Fila inicial por defecto para x-user
+                addHeaderRow("Content-Type", "application/json");
+                applyPlaceholders();
+            };
+
+            // --- EJECUCIÓN ---
+            function ExecuteRequest() {
+                var outputDiv = document.getElementById("output");
+                var getVal = function (el) {
+                    return (el.value === el.getAttribute("placeholder")) ? "" : el.value;
+                };
+
+                // Recoger Headers
+                var keys = document.getElementsByClassName("h-key");
+                var vals = document.getElementsByClassName("h-val");
+                var headers = {};
+
+                for (var i = 0; i < keys.length; i++) {
+                    var k = getVal(keys[i]);
+                    var v = getVal(vals[i]);
+                    if (k !== "") {
+                        headers[k] = v;
+                    }
+                }
+
+                var body = getVal(document.getElementById("body"));
+                var url = document.getElementById("url").value;
+                var method = document.getElementById("method").value;
+
+                outputDiv.innerText = "Enviando...";
+                outputDiv.style.color = "#80ff80";
+
+                try {
+                    // Crear objeto WinHttpRequest
+                    var http = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
+
+                    // Configurar la petición
+                    http.Open(method, url, false); // false = síncrono
+
+                    // Añadir headers
+                    for (var key in headers) {
+                        http.SetRequestHeader(key, headers[key]);
+                    }
+
+                    // Enviar la petición
+                    if (method !== "GET" && body !== "") {
+                        http.Send(body);
+                    } else {
+                        http.Send();
+                    }
+
+                    // Verificar el estado de la respuesta
+                    if (http.Status >= 200 && http.Status < 300) {
+                        var responseText = http.ResponseText;
+                        outputDiv.innerText = "RESPUESTA:\n" + (responseText || "Éxito.");
+                        outputDiv.style.color = "#dcdcdc";
+                    } else {
+                        outputDiv.innerText = "ERROR:\nHTTP " + http.Status + " - " + http.StatusText;
+                        outputDiv.style.color = "#ff8080";
+                    }
+                } catch (e) {
+                    outputDiv.innerText = "Error: " + e.message;
+                    outputDiv.style.color = "#ff8080";
+                }
+            }
+        </script>
+</head>
+
+<body>
+    <div class="menu-bar">
+        <div class="menu-group">
+            <button class="menu-button" onclick="toggleMenu()">Archivo</button>
+            <div id="fileMenu" class="dropdown-content">
+                <div onclick="LoadConfig(); toggleMenu();">Abrir Configuración</div>
+                <div onclick="SaveConfig(); toggleMenu();">Guardar Configuración</div>
+                <div style="border-top: 1px solid #ccc;" onclick="window.location.reload()">Reiniciar</div>
+                <div onclick="window.close()">Salir</div>
+            </div>
+        </div>
+        <div class="menu-item" style="float:right; font-size: 12px; color: #888;">v1.0.0</div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="container">
+            <div class="row-table">
+                <div class="cell" style="width:100px">
+                    <label>Método:</label>
+                    <select id="method">
+                        <option value="POST">POST</option>
+                        <option value="GET">GET</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                </div>
+                <div class="cell">
+                    <label>Endpoint URL:</label>
+                    <input type="text" id="url" value="http://localhost:8080/api/graphql">
+                </div>
+                <div class="cell" style="width:120px">
+                    <button class="btn btn-execute" onclick="ExecuteRequest()">Enviar</button>
+                </div>
+            </div>
+
+            <label>Headers de la Petición:</label>
+            <div id="headers-container"></div>
+            <button class="btn btn-add" onclick="addHeaderRow('', '')">+ Añadir Cabecera</button>
+
+            <label for="body">Cuerpo de la Petición (Body/Query):</label>
+            <textarea id="body" placeholder='{"query": "{ ... }"}'></textarea>
+        </div>
+
+        <div id="output">Los resultados de la API aparecerán en este panel...</div>
+    </div>
+</body>
+
+</html>
+
+</html>

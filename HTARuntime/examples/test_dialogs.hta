@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Diálogos</title>
+<HTA:APPLICATION
+    APPLICATIONNAME="Test Diálogos HTA"
+    BORDER="thick"
+    CAPTION="yes"
+    SHOWINTASKBAR="yes"
+    SINGLEINSTANCE="no"
+    WINDOWSTATE="normal"
+>
+<style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; color: #222; }
+    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    button { background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin: 0.25rem; font-size: 1rem; }
+    button:hover { background: #2980b9; }
+    button.danger { background: #e74c3c; }
+    button.danger:hover { background: #c0392b; }
+    #output { background: #ecf0f1; padding: 1rem; border-radius: 4px; margin-top: 1rem; white-space: pre-wrap; font-family: monospace; min-height: 3rem; }
+    .info { color: #7f8c8d; font-size: 0.9rem; }
+    .path { word-break: break-all; color: #2c3e50; }
+</style>
+</head>
+<body>
+
+<h1>Diálogos Nativos</h1>
+<p class="info">Usa <code>System.dialogs.openFile()</code>, <code>.saveFile()</code> y <code>.openDirectory()</code></p>
+
+<div class="card">
+    <h3>Abrir Archivo</h3>
+    <button onclick="abrirArchivo()">Seleccionar archivo</button>
+</div>
+
+<div class="card">
+    <h3>Guardar Archivo</h3>
+    <button onclick="guardarArchivo()">Seleccionar destino</button>
+</div>
+
+<div class="card">
+    <h3>Seleccionar Carpeta</h3>
+    <button onclick="seleccionarCarpeta()">Seleccionar carpeta</button>
+</div>
+
+<div id="output">Selecciona un diálogo para empezar...</div>
+
+<script>
+    const output = document.getElementById('output');
+
+    async function abrirArchivo() {
+        output.textContent = 'Abriendo diálogo...';
+        try {
+            const res = await System.dialogs.openFile({
+                title: "Seleccionar archivo",
+                filters: [
+                    { name: "Archivos de texto", extensions: ["txt"] },
+                    { name: "Todos los archivos", extensions: ["*"] }
+                ]
+            });
+            if (res.ok) {
+                output.innerHTML = 'Archivo seleccionado:\n<span class="path">' + res.path + '</span>';
+            } else {
+                output.textContent = res.error || 'Cancelado';
+            }
+        } catch (e) {
+            output.textContent = 'ERROR: ' + e;
+        }
+    }
+
+    async function guardarArchivo() {
+        output.textContent = 'Abriendo diálogo...';
+        try {
+            const res = await System.dialogs.saveFile({
+                title: "Guardar archivo",
+                filters: [
+                    { name: "Archivos de texto", extensions: ["txt"] },
+                    { name: "Todos los archivos", extensions: ["*"] }
+                ]
+            });
+            if (res.ok) {
+                output.innerHTML = 'Destino seleccionado:\n<span class="path">' + res.path + '</span>';
+            } else {
+                output.textContent = res.error || 'Cancelado';
+            }
+        } catch (e) {
+            output.textContent = 'ERROR: ' + e;
+        }
+    }
+
+    async function seleccionarCarpeta() {
+        output.textContent = 'Abriendo diálogo...';
+        try {
+            const res = await System.dialogs.openDir();
+            if (res.ok) {
+                output.innerHTML = 'Carpeta seleccionada:\n<span class="path">' + res.path + '</span>';
+            } else {
+                output.textContent = res.error || 'Cancelado';
+            }
+        } catch (e) {
+            output.textContent = 'ERROR: ' + e;
+        }
+    }
+</script>
+
+</body>
+</html>

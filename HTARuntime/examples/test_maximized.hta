@@ -1,0 +1,34 @@
+<html>
+<head>
+<title>Maximized HTA</title>
+<HTA:APPLICATION
+    APPLICATIONNAME="Ventana Maximizada"
+    BORDER="dialog"
+    CAPTION="no"
+    SHOWINTASKBAR="yes"
+    WINDOWSTATE="maximize"
+>
+<style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 3rem;
+           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+           color: white; min-height: 100vh; }
+    h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    .card { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 2rem; backdrop-filter: blur(4px); }
+</style>
+</head>
+<body>
+    <div class="card">
+        <h1>&#x1F31F; Ventana Maximizada</h1>
+        <p>Esta ventana debería abrirse:</p>
+        <ul>
+            <li>Maximizada (&check; WINDOWSTATE=maximize)</li>
+            <li>Sin barra de título (&check; CAPTION=no)</li>
+            <li>Con borde estilo diálogo (&check; BORDER=dialog)</li>
+        </ul>
+        <button onclick="System.quit()" style="background:rgba(255,255,255,0.3);border:none;padding:0.5rem 1.5rem;border-radius:6px;color:white;cursor:pointer;font-size:1rem;">
+            Cerrar ventana
+        </button>
+    </div>
+    <p style="margin-top:1rem;font-size:0.8rem;opacity:0.7;">Si ves esto sin barra de título y maximizado, el parser y la config dinámica funcionan.</p>
+</body>
+</html>
