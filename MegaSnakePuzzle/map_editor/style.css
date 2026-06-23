@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+:root {
+    --bg: #181818;
+    --focus: #1F1F1F;
+    /*--focus: #393939;*/
+    --border-color: #2b2b2B;
+
+    --panel: #1e1e1e;
+    --active: #0078d4;
+    --active-rgb: 0, 120, 212;
+    --muted: #9aa0a6;
+    --fg: #ffffff;
+    --ENTITY_NONE: #333333;
+    --ENTITY_SNAKE: #4caf50;
+    --ENTITY_FOOD: #ff5252;
+    --ENTITY_PLATFORM: #9e9e9e;
+    --ENTITY_ROCK: #795548;
+    --ENTITY_SPIKE: #ffc107;
+    --ENTITY_EXIT: #00bcd4;
+}
+
+body {
+    font-family: "Open Sans", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    text-align: left;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    overflow: hidden;
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+    height: 28px;
+    display: flex;
+    align-content: flex-start;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.spacer {
+    width: 10px;
+    line-height: 28px;
+    visibility: hidden;
+    margin: 0 auto;
+}
+
+.dropdown summary {
+    list-style: none;
+    padding: 3px 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.dropdown-content {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--border-color);
+    z-index: 99;
+
+}
+
+.dropdown-content li {
+    list-style: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.dropdown-content.hover li:hover {
+    background: var(--focus);
+}
+
+.main {
+    background-color: var(--focus);
+    width: 100%;
+    height: calc(100vh - 30px);
+    display: flex;
+}
+
+.toolbar-horizontal {
+    background-color: var(--bg);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    width: 120px;
+    padding: 10px;
+    gap: 10px;
+}
+
+.panel {
+    background-color: var(--bg);
+    display: flex;
+    box-sizing: border-box;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+.panel-grid {
+    width: calc(100% - 600px);
+    padding: 10px;
+}
+
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 30px;
+    margin: 0;
+    cursor: pointer;
+    position: relative;
+}
+
+input[type="radio"]::after {
+    content: attr(title);
+    position: absolute;
+    top: 50%;
+    left: 50px;
+    transform: translate(-50%, -50%);
+    font-size: 0.75em;
+    color: var(--fg);
+}
+
+input[type="radio"]::before {
+    content: ' ';
+    position: absolute;
+    top: 33%;
+    left: 5px;
+    width: 10px;
+    height: 10px;
+}
+
+.ENTITY_EXIT,
+input[value=ENTITY_EXIT]::before {
+    background-color: var(--ENTITY_EXIT);
+}
+
+.ENTITY_FOOD,
+input[value="ENTITY_FOOD"]::before {
+    background-color: var(--ENTITY_FOOD);
+}
+
+.ENTITY_NONE,
+input[value=ENTITY_NONE]::before {
+    background-color: var(--ENTITY_NONE);
+}
+
+.ENTITY_PLATFORM,
+input[value=ENTITY_PLATFORM]::before {
+    background-color: var(--ENTITY_PLATFORM);
+}
+
+.ENTITY_ROCK,
+input[value="ENTITY_ROCK"]::before {
+    background-color: var(--ENTITY_ROCK);
+}
+
+.ENTITY_SNAKE,
+input[value="ENTITY_SNAKE"]::before {
+    background-color: var(--ENTITY_SNAKE);
+}
+
+.ENTITY_SPIKE,
+input[value="ENTITY_SPIKE"]::before {
+    background-color: var(--ENTITY_SPIKE);
+}
+
+input[type="radio"]:checked {
+    border: 1px solid var(--active);
+    background-color: rgba(var(--active-rgb), 0.5);
+}
+
+.tabs-container {
+    display: flex;
+    flex-direction: row;
+
+}
+
+.btn {
+    background-color: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--focus);
+    padding: 5px 10px;
+}
+
+.tabs {
+    display: flex;
+    flex-direction: row;
+}
+
+.tab {
+    border: 1px solid var(--focus);
+    background-color: var(--bg);
+    border-left: 0;
+    padding: 5px 10px;
+}
+
+.tab.active {
+    border-top: 2px solid var(--active);
+    background-color: var(--focus);
+}
+
+.tab span {
+    margin: 5px 5px 5px 10px;
+    color: red;
+}
+
+#grid {
+    display: grid;
+    grid-template-columns: repeat(40, 16px);
+    gap: 1px;
+    width: fit-content;
+}
+
+.cell {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+#output {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    border: 1px solid var(--focus);
+    color: #7aff7a;
+    font-family: monospace;
+}

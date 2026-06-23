@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <!-- title>Map Editor - Snake Indie</title -->
+    <link rel="stylesheet" href="style.css" />
+    <title>🕹️ Snake Map Editor</title>
+</head>
+
+<body>
+    <div class="navbar">
+        <details class="dropdown">
+            <summary class="dropbtn">Archivo</summary>
+            <ul class="dropdown-content hover">
+                <li id="new">Nuevo</li>
+                <li id="loadJsonBtn">Abrir</li>
+                <li id="saveJsonBtn">Guardar</li>
+                <!--<li id="#saveas">Guardar Como</li>-->
+            </ul>
+            <input type="file" id="fileInput" style="display:none" accept=".json" />
+        </details>
+        <details class="dropdown">
+            <summary class="dropbtn">Mapa</summary>
+            <ul id="mapBtn" class="dropdown-content hover">
+                <li id="clearBtn">Limpiar Actual</li>
+                <li id="exportBtn">Exportar Actual</li>
+                <li id="exportAllBtn">Exportar Todo</li>
+            </ul>
+        </details>
+        <span class="spacer"></span>
+        <!--
+            <details class="dropdown">
+                <summary class="dropbtn" style="width:50px">Sobre</summary>
+                <ul id="aboutBtn" class="dropdown-content">
+                    <li id="contact">Ayuda</li>
+                    <li id="contact">Salir</li>
+                </ul>
+            </details>
+            -->
+    </div>
+    <section class="main">
+        <section class="panel toolbar-horizontal" id="entityType">
+            <div class="toolbar-label">Entidad:</div>
+            <input type="radio" name="entityType" value="ENTITY_NONE" title="NONE" checked />
+            <input type="radio" name="entityType" value="ENTITY_SNAKE" title="SNAKE" />
+            <input type="radio" name="entityType" value="ENTITY_FOOD" title="FOOD" />
+            <input type="radio" name="entityType" value="ENTITY_PLATFORM" title="PLATFORM" />
+            <input type="radio" name="entityType" value="ENTITY_ROCK" title="ROCK" />
+            <input type="radio" name="entityType" value="ENTITY_SPIKE" title="SPIKE" />
+            <input type="radio" name="entityType" value="ENTITY_EXIT" title="EXIT" />
+        </section>
+        <section class="panel panel-grid">
+
+            <div class="tabs-container">
+                <button class="btn" id="add-tab">＋</button>
+                <div class="tabs" id="tabs"></div>
+            </div>
+            <section class="grid" id="grid">
+            </section>
+        </section>
+        <section class="panel toolbar-horizontal" style="width: 480px;">
+            <div class="toolbar-label">Codigo Fuente:</div>
+            <textarea id="output" readonly></textarea>
+        </section>
+        <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton/themes/terminus';
+@source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
+
+/* Forzar modo light siempre:
+   1. @custom-variant dark reemplaza el variant por defecto (prefers-color-scheme)
+      con uno basado en clase .dark. Como nunca añadimos .dark, los bloques
+      @variant dark de Skeleton nunca se activan.
+   2. color-scheme: light fuerza light-dark() a usar siempre el color light. */
+@custom-variant dark (&:where(.dark, .dark *));
+:root { color-scheme: light; }

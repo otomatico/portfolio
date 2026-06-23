@@ -1,0 +1,25 @@
+[2026-06-09 13:08:45] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"salas","metodo":"POST"}
+[2026-06-09 14:41:39] [WARNING] [salas-formacion] Credenciales inválidas {"email":"admin@example.com","caller":"App\\Controllers\\AuthController::login"}
+[2026-06-09 16:15:32] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-09 16:15:44] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-09 16:17:16] [WARNING] [salas-formacion] Credenciales inválidas {"email":"coordinador@example.com","caller":"App\\Controllers\\AuthController::login"}
+[2026-06-10 07:57:21] [WARNING] [salas-formacion] Credenciales inválidas {"email":"admin@example.com","caller":"App\\Controllers\\AuthController::login"}
+[2026-06-10 10:59:01] [WARNING] [salas-formacion] Credenciales inválidas {"email":"coordinador@example.com","caller":"App\\Controllers\\AuthController::login"}
+[2026-06-10 10:59:37] [WARNING] [salas-formacion] Credenciales inválidas {"email":"admin@example.com","caller":"App\\Controllers\\AuthController::login"}
+[2026-06-10 11:06:08] [WARNING] [salas-formacion] Credenciales inválidas {"email":"coordinador@example.com","caller":"App\\Controllers\\AuthController::login"}
+[2026-06-10 11:06:11] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:06:16] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"usuarios","metodo":"GET"}
+[2026-06-10 11:06:17] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"maestros","metodo":"GET"}
+[2026-06-10 11:06:18] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:06:20] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"usuarios","metodo":"GET"}
+[2026-06-10 11:06:29] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:06:34] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:06:38] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:06:47] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:07:09] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:07:11] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:10:23] [WARNING] [salas-formacion] Credenciales inválidas {"email":"coordinador@example.com","caller":"App\\Controllers\\AuthController::login"}
+[2026-06-10 11:10:26] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:12:40] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:15:11] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
+[2026-06-10 11:15:26] [WARNING] [salas-formacion] Acceso denegado - sin permiso para operación {"rol":"coordinador","componente":"permisos","metodo":"GET"}
