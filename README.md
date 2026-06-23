@@ -15,6 +15,8 @@ Este repositorio contiene múltiples proyectos. A continuación, se detalla la l
 | `/Agora`                        | Aplicacion flexible de proposito general que se adapta al cualquier negocio.           |
 | `/MegaSnakePuzzle`              | Un juego de puzzle para consola retro MegaDriver/SegaGenesis.                          |
 | `/MegaSnakePuzzle/map_editor`   | Herramienta para editar mapas de forma visual para el juego MegaSnakePuzzle.           |
+| `/HTARuntime`   | Un navegador de HTML for Application.           |
+| `/Reserva de Sala`   | Reescritura de una de mis primeras aplicaciones(2008) guiada con IA.Se trata de una aplicacion para reservar salar de reunion           |
 
 
 ---
