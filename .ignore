@@ -1,0 +1,11 @@
+# Ignorar todas las carpetas que empiezan con un punto
+.*/
+
+# Ignorar la carpeta node_modules
+node_modules/
+
+# Ignorar todo dentro de la carpeta bin
+bin/*
+
+# Ignorar todo dentro de la carpeta target
+target/*
